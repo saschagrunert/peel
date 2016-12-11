@@ -1,7 +1,7 @@
 [package]
 name = "parsetree"
 version = "0.1.0"
-authors = ["Sascha Grunert <Sascha.Grunert@rohde-schwarz.com>"]
+authors = ["Sascha Grunert <mail@saschagrunert.de>"]
 
 [dependencies]
 nom = "2"
