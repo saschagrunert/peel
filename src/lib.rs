@@ -89,7 +89,10 @@ impl<R, V> Tree<R, V> {
                             trace!("Continue traversal at first child of the node.");
                             result = self.traverse(node, input_left, result);
                         }
-                        None => trace!("No child left any more, parsing done."),
+                        None => {
+                            trace!("No child nodes left any more, parsing done.");
+                            break;
+                        }
                     }
                 }
                 IResult::Error(err) => trace!("Parser failed with error: {:?}", err),
