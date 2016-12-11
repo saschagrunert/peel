@@ -5,3 +5,5 @@ authors = ["Sascha Grunert <Sascha.Grunert@rohde-schwarz.com>"]
 
 [dependencies]
 nom = "2"
+log = "0"
+term = "0"
