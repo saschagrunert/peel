@@ -1,11 +1,17 @@
+//! Second example parser
 use examples::*;
 
 #[derive(Debug)]
+/// Could hold some parser data like configuration parameters
 pub struct ExampleParser2;
 
 #[derive(Debug)]
+/// The actual parser returning result
 pub struct ExampleParser2Result {
+    /// Some value
     pub value_1: u32,
+
+    /// Another value
     pub value_2: u64,
 }
 
@@ -16,7 +22,7 @@ impl Parser for ExampleParser2 {
     fn parse<'a, 'b>(&'a self,
                      input: &'b [u8],
                      _: &ParserNode<ParserResult, ParserVariant>,
-                     _: &ParserTree<ParserResult, ParserVariant>)
+                     _: &ParserArena<ParserResult, ParserVariant>)
                      -> IResult<&'b [u8], ParserResult> {
         do_parse!(input,
                   value_1: be_u32 >> value_2: be_u64 >>

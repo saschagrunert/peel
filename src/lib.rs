@@ -1,10 +1,16 @@
 //!  Dynamic parsers within a tree
+#![deny(missing_docs)]
+
 #[macro_use]
 extern crate nom;
 
-pub mod tree;
-pub mod parser;
 pub mod examples;
+pub mod structures;
+pub mod traits;
+
+struct Tree {
+    
+}
 
 #[cfg(test)]
 mod tests {
@@ -12,8 +18,7 @@ mod tests {
 
     #[test]
     fn parser() {
-        use tree::ArenaTree;
-        let tree: &mut ArenaTree<ParserBox<ParserResult, ParserVariant>> = &mut ArenaTree::new();
+        let tree: &mut Arena<ParserBox<ParserResult, ParserVariant>> = &mut Arena::new();
 
         let p1 = Box::new(ExampleParser1);
         let p2 = Box::new(ExampleParser2);

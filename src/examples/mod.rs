@@ -8,21 +8,29 @@ pub mod exampleparser2;
 /// Provides sensible imports for parsers
 pub mod prelude {
     pub use super::*;
-    pub use parser::*;
-    pub use tree::*;
+    pub use structures::*;
+    pub use traits::*;
 
     pub use super::exampleparser1::*;
     pub use super::exampleparser2::*;
 }
 
 #[derive(Debug)]
+/// The return value for the variant retrieval of the Parser trait
 pub enum ParserVariant {
+    /// First example parser
     ExampleParser1,
+
+    /// Second example parser
     ExampleParser2,
 }
 
 #[derive(Debug)]
+/// The return value for the actual parsing
 pub enum ParserResult {
+    /// First example parser result
     ExampleParser1Result(ExampleParser1Result),
+
+    /// Second example parser result
     ExampleParser2Result(ExampleParser2Result),
 }
