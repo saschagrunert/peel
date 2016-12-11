@@ -19,10 +19,10 @@ pub mod prelude {
 /// The return value for the variant retrieval of the Parser trait
 pub enum ParserVariant {
     /// First example parser
-    ExampleParser1,
+    ExampleParser1(ExampleParser1),
 
     /// Second example parser
-    ExampleParser2,
+    ExampleParser2(ExampleParser2),
 }
 
 #[derive(Debug)]

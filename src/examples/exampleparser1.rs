@@ -1,7 +1,7 @@
 //! First example parser
 use examples::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// Could hold some parser data like configuration parameters
 pub struct ExampleParser1;
 
@@ -25,7 +25,8 @@ impl Parser for ExampleParser1 {
                      _: &ParserArena<ParserResult, ParserVariant>)
                      -> IResult<&'b [u8], ParserResult> {
         do_parse!(input,
-                  value_1: be_u8 >> value_2: be_u16 >>
+                  value_1: be_u8 >>
+                  value_2: be_u16 >>
                   (ParserResult::ExampleParser1Result(ExampleParser1Result {
                       value_1: value_1,
                       value_2: value_2,
@@ -33,6 +34,6 @@ impl Parser for ExampleParser1 {
     }
 
     fn variant(&self) -> ParserVariant {
-        ParserVariant::ExampleParser1
+        ParserVariant::ExampleParser1(self.clone())
     }
 }

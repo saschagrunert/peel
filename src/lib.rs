@@ -3,10 +3,8 @@
 
 #[macro_use]
 extern crate nom;
-
 #[macro_use]
 extern crate log;
-
 extern crate term;
 
 pub mod examples;
@@ -99,30 +97,5 @@ impl<R, V> Tree<R, V> {
             }
         }
         result
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use examples::prelude::*;
-    use super::*;
-
-    #[test]
-    fn tree() {
-        // Create a tree
-        let mut tree = Tree::new();
-        tree.set_log_level(LogLevelFilter::Trace);
-
-        // Create some parsers
-        let example_parser_1 = tree.new_parser(ExampleParser1);
-        let example_parser_2 = tree.new_parser(ExampleParser2);
-
-        // Combine the parsers
-        tree.link(example_parser_1, example_parser_2);
-
-        // Traverse the tree and find the "best" parsing result
-        let input = [0xff; 20];
-        let result = tree.traverse(example_parser_1, &input, vec![]);
-        println!("Result: {:?}", result);
     }
 }
