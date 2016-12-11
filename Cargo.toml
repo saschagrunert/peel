@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["Sascha Grunert <Sascha.Grunert@rohde-schwarz.com>"]
 
 [dependencies]
+nom = "2"
