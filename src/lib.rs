@@ -4,41 +4,119 @@
 #[macro_use]
 extern crate nom;
 
+#[macro_use]
+extern crate log;
+
+extern crate term;
+
 pub mod examples;
 pub mod structures;
 pub mod traits;
+mod logger;
 
-struct Tree {
-    
+use nom::IResult;
+use log::LogLevelFilter;
+
+use structures::{Arena, NodeId};
+use traits::{ParserBox, Parser};
+use logger::Logger;
+
+/// A parser tree description for a result R and a variant V
+pub struct Tree<R, V> {
+    /// The memory arena of the tree
+    pub arena: Arena<ParserBox<R, V>>,
+
+    /// The current result stack of the parsers
+    pub result: Vec<R>,
+}
+
+impl<R, V> Tree<R, V> {
+    /// Create a new emtpy `Tree`
+    pub fn new() -> Self {
+        Tree {
+            arena: Arena::new(),
+            result: vec![],
+        }
+    }
+
+    /// Set the global log level for reporting
+    pub fn set_log_level(&mut self, level: LogLevelFilter) {
+        // Setup the logger if not already set
+        if log::set_logger(|max_log_level| {
+                max_log_level.set(level);
+                Box::new(Logger)
+            })
+            .is_err() {
+            warn!("Logger already set.");
+        };
+        trace!("Log level set to: {:?}", level);
+    }
+
+    /// Create a new boxed Parser and return a corresponding Node
+    pub fn new_parser<T>(&mut self, parser: T) -> NodeId
+        where T: Parser<Result = R, Variant = V> + 'static
+    {
+        // Create a new Parser in a Box
+        let parser_box = Box::new(parser);
+
+        // Create a new node and return the node ID
+        self.arena.new_node(parser_box)
+    }
+
+    /// Append the second node to the first one within the current tree structure
+    pub fn link(&mut self, left: NodeId, right: NodeId) {
+        left.append(right, &mut self.arena);
+    }
+
+    /// Do parsing until a parser fails. This is equivalent in finding the deepest possible
+    /// parsing result within the tree.
+    pub fn traverse(&self, start_node: NodeId, input: &[u8]) {
+        for node_id in start_node.following_siblings(&self.arena) {
+            // Get the initial values from the arena
+            let ref node = self.arena[node_id];
+            let ref parser = node.data;
+            trace!("Parsing: {:?}", node_id);
+
+            // Do the actual parsing work
+            match parser.parse(input, node, &self.arena) {
+                IResult::Done(input_left, result) => {
+                    trace!("Parsing succeed, left input length: {}", input_left.len());
+                    match node.first_child() {
+                        Some(node) => {
+                            trace!("Continue traversal at first child of the node.");
+                            self.traverse(node, input_left);
+                        }
+                        None => trace!("No child left any more, parsing done."),
+                    }
+                }
+                IResult::Error(err) => trace!("Parser failed with error: {:?}", err),
+                IResult::Incomplete(err) => trace!("Parser failed: {:?}", err),
+            }
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use examples::prelude::*;
+    use super::*;
 
     #[test]
-    fn parser() {
-        let tree: &mut Arena<ParserBox<ParserResult, ParserVariant>> = &mut Arena::new();
+    fn tree() {
+        // Create a tree
+        let mut tree = Tree::new();
+        tree.set_log_level(LogLevelFilter::Trace);
 
-        let p1 = Box::new(ExampleParser1);
-        let p2 = Box::new(ExampleParser2);
-        let p3 = Box::new(ExampleParser2);
+        // Create some parsers
+        let example_parser_1 = tree.new_parser(ExampleParser1);
+        let example_parser_2 = tree.new_parser(ExampleParser2);
 
-        let root = tree.new_node(p1);
-        let sub_1 = tree.new_node(p2);
-        let sub_2 = tree.new_node(p3);
+        // Combine the parsers
+        tree.link(example_parser_1, example_parser_2);
 
-        root.append(sub_1, tree);
-        root.append(sub_2, tree);
-
-        for node in root.descendants(tree) {
-            let input = [0xff; 12];
-
-            let ref node = tree[node];
-            let ref parser = node.data;
-
-            println!("Parsing result: {:?}", parser.parse(&input, node, tree));
-            println!("Parser variant: {:?}\n", parser.variant());
-        }
+        // Traverse the tree and find the "best" parsing result
+        let input = [0xff; 20];
+        let result = tree.traverse(example_parser_1, &input);
+        println!("Result: {:?}", result);
     }
 }
