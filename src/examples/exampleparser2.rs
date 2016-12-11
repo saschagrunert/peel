@@ -1,5 +1,7 @@
 //! Second example parser
-use examples::*;
+use nom::{be_u32, be_u64, IResult};
+use traits::{Parser, ParserNode, ParserArena};
+use examples::{ParserResult, ParserVariant};
 
 #[derive(Debug, Clone)]
 /// Could hold some parser data like configuration parameters
