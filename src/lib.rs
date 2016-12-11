@@ -68,9 +68,10 @@ impl<R, V> Tree<R, V> {
         left.append(right, &mut self.arena);
     }
 
-    /// Do parsing until a parser fails. This is equivalent in finding the deepest possible
-    /// parsing result within the tree.
-    pub fn traverse(&self, start_node: NodeId, input: &[u8]) {
+    /// Do parsing until all possible paths failed. This is equivalent in finding the deepest
+    /// possible parsing result within the tree. The result will be assembled together in the
+    /// given result vector, which will be returned at the end.
+    pub fn traverse(&self, start_node: NodeId, input: &[u8], mut result: Vec<R>) -> Vec<R> {
         for node_id in start_node.following_siblings(&self.arena) {
             // Get the initial values from the arena
             let ref node = self.arena[node_id];
@@ -79,12 +80,16 @@ impl<R, V> Tree<R, V> {
 
             // Do the actual parsing work
             match parser.parse(input, node, &self.arena) {
-                IResult::Done(input_left, result) => {
+                IResult::Done(input_left, parser_result) => {
+                    // Adapt the result
                     trace!("Parsing succeed, left input length: {}", input_left.len());
+                    result.push(parser_result);
+
+                    // Check for further child nodes
                     match node.first_child() {
                         Some(node) => {
                             trace!("Continue traversal at first child of the node.");
-                            self.traverse(node, input_left);
+                            result = self.traverse(node, input_left, result);
                         }
                         None => trace!("No child left any more, parsing done."),
                     }
@@ -93,6 +98,7 @@ impl<R, V> Tree<R, V> {
                 IResult::Incomplete(err) => trace!("Parser failed: {:?}", err),
             }
         }
+        result
     }
 }
 
@@ -116,7 +122,7 @@ mod tests {
 
         // Traverse the tree and find the "best" parsing result
         let input = [0xff; 20];
-        let result = tree.traverse(example_parser_1, &input);
+        let result = tree.traverse(example_parser_1, &input, vec![]);
         println!("Result: {:?}", result);
     }
 }
