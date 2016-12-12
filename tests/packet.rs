@@ -5,8 +5,6 @@ extern crate parsetree;
 use std::iter;
 use log::LogLevelFilter;
 
-use parsetree::Tree;
-use parsetree::structures::NodeId;
 use parsetree::packet::prelude::*;
 
 static PACKET_ETH_IPV4_TCP: &'static [u8] =
@@ -37,7 +35,7 @@ static TLS_HEADER: &'static [u8] =
       0x2f, 0x33, 0x2e, 0x31, 0x05, 0x68, 0x32, 0x2d, 0x31, 0x34, 0x02, 0x68, 0x32, 0x75, 0x50, 0x00, 0x00, 0x00,
       0x0b, 0x00, 0x02, 0x01, 0x00, 0x00, 0x0a, 0x00, 0x06, 0x00, 0x04, 0x00, 0x17, 0x00, 0x18];
 
-fn get_default_tree() -> Tree<Layer, ParserVariant> {
+fn get_default_tree() -> PacketTree {
     // Create a tree
     let mut tree = Tree::new();
     tree.set_log_level(LogLevelFilter::Trace);
@@ -69,14 +67,17 @@ fn get_default_tree() -> Tree<Layer, ParserVariant> {
     tree.link(ipv6, tcp_ipv6);
     tree.link(ipv6, udp_ipv6);
 
-    info!("The tree looks like:");
-    info!("- Eth");
-    log_children(&tree, eth, 0);
-
+    dump_tree(&tree);
     tree
 }
 
-fn log_children(tree: &Tree<Layer, ParserVariant>, node: NodeId, mut level: usize) {
+fn dump_tree(tree: &PacketTree) {
+    info!("The tree looks like:");
+    info!("- {}", tree.arena[tree.root.unwrap()].data.variant());
+    log_children(&tree, tree.root.unwrap(), 0);
+}
+
+fn log_children(tree: &PacketTree, node: NodeId, mut level: usize) {
     level += 2;
     for child in node.children(&tree.arena) {
         let indent = iter::repeat(' ').take(level).collect::<String>();
@@ -90,6 +91,46 @@ fn log_children(tree: &Tree<Layer, ParserVariant>, node: NodeId, mut level: usiz
 fn tcp() {
     let tree = get_default_tree();
     let result = tree.traverse(PACKET_ETH_IPV4_TCP, vec![]);
+    assert_eq!(result.len(), 3);
+    assert_eq!(result[0],
+               Layer::Ethernet(EthernetPacket {
+                   dst: Default::default(),
+                   src: Default::default(),
+                   ethertype: EtherType::Ipv4,
+               }));
+    assert_eq!(result[1],
+               Layer::Ipv4(Ipv4Packet {
+                   version: 4,
+                   ihl: 20,
+                   tos: 0,
+                   length: 52,
+                   id: 29474,
+                   flags_and_fragment_offset: 16384,
+                   ttl: 63,
+                   protocol: IpProtocol::Tcp,
+                   checksum: 14857,
+                   src: Ipv4Addr::new(10, 0, 0, 101),
+                   dst: Ipv4Addr::new(66, 196, 65, 112),
+               }));
+    assert_eq!(result[2],
+               Layer::Tcp(TcpPacket {
+                   source_port: 51781,
+                   dest_port: 443,
+                   sequence_no: 2556845834,
+                   ack_no: 1151172357,
+                   data_offset: 32,
+                   reserved: 0,
+                   flag_urg: false,
+                   flag_ack: true,
+                   flag_psh: false,
+                   flag_rst: false,
+                   flag_syn: false,
+                   flag_fin: false,
+                   window: 8192,
+                   checksum: 49138,
+                   urgent_pointer: 0,
+                   options: vec![1, 1, 8, 10, 0, 2, 44, 44, 99, 147, 241, 91],
+               }));
     info!("Result [ETH, IPV4, TCP]: {:?}", result);
 }
 
@@ -99,6 +140,16 @@ fn tls() {
     let mut packet = Vec::from(PACKET_ETH_IPV4_TCP);
     packet.extend_from_slice(TLS_HEADER);
     let result = tree.traverse(&packet, vec![]);
+    assert_eq!(result.len(), 4);
+    assert_eq!(result[3],
+               Layer::Tls(TlsPacket {
+                   content_type: TlsRecordContentType::Handshake,
+                   version: TlsRecordVersion {
+                       major: 3,
+                       minor: 1,
+                   },
+                   length: 244,
+               }));
     info!("Result [ETH, IPV4, TCP, TLS]: {:?}", result);
 }
 
@@ -106,6 +157,12 @@ fn tls() {
 fn udp() {
     let tree = get_default_tree();
     let result = tree.traverse(PACKET_ETH_IPV6_UDP, vec![]);
+    assert_eq!(result.len(), 3);
+    assert_eq!(result[0],
+               Layer::Ethernet(EthernetPacket {
+                   dst: Default::default(),
+                   src: Default::default(),
+                   ethertype: EtherType::Ipv6,
+               }));
     info!("Result [ETH, IPV6, UDP]: {:?}", result);
 }
-

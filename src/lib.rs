@@ -23,6 +23,13 @@ use structures::{Arena, NodeId};
 use traits::{ParserBox, Parser};
 use logger::Logger;
 
+/// Provides sensible imports at all
+pub mod prelude {
+    pub use traits::{Parser, ParserNode, ParserArena};
+    pub use structures::{Arena, NodeId, Node};
+    pub use super::Tree;
+}
+
 /// A parser tree description for a result R and a variant V
 pub struct Tree<R, V> {
     /// The memory arena of the tree

@@ -6,12 +6,16 @@ pub mod layer3;
 use self::prelude::*;
 use std::{fmt, str};
 
-/// Provides sensible imports for parsers
+/// Provides sensible imports for packet parsers
 pub mod prelude {
-    pub use nom::{be_u8, be_u16, be_u32, IResult};
-    pub use traits::{Parser, ParserNode, ParserArena};
-    pub use super::{Layer, ParserVariant};
     pub use std::net::{Ipv4Addr, Ipv6Addr};
+    pub use nom::{be_u8, be_u16, be_u32, IResult};
+
+    pub use ::prelude::*;
+    pub use super::{Layer, ParserVariant};
+
+    /// A general shorthand for the packet parsing tree
+    pub type PacketTree = Tree<Layer, ParserVariant>;
 
     /// Link
     pub use super::layer1::*;

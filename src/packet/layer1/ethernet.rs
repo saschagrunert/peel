@@ -18,7 +18,7 @@ pub struct EthernetPacket {
     pub ethertype: EtherType,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Default, Eq, PartialEq)]
 /// Representation of a mac network address, usually in the format "ff:ff:ff:ff:ff:ff"
 pub struct MacAddress(pub u8, pub u8, pub u8, pub u8, pub u8, pub u8);
 
@@ -26,10 +26,10 @@ pub struct MacAddress(pub u8, pub u8, pub u8, pub u8, pub u8, pub u8);
 /// Supported `EtherType`
 pub enum EtherType {
     /// Internet Protocol Version 4
-    IPv4,
+    Ipv4,
 
     /// Internet Protocol Version 6
-    IPv6,
+    Ipv6,
 }
 
 impl EtherType {
@@ -37,8 +37,8 @@ impl EtherType {
     /// invalid.
     pub fn from_u16(input: u16) -> Option<EtherType> {
         match input {
-            0x0800 => Some(EtherType::IPv4),
-            0x86DD => Some(EtherType::IPv6),
+            0x0800 => Some(EtherType::Ipv4),
+            0x86DD => Some(EtherType::Ipv6),
             _ => None,
         }
     }
