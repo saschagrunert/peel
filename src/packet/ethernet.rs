@@ -48,11 +48,11 @@ impl Parser for EthernetParser {
     type Result = ParserResult;
     type Variant = ParserVariant;
 
-    fn parse<'a, 'b>(&'a self,
-                     input: &'b [u8],
-                     _: &ParserNode<ParserResult, ParserVariant>,
-                     _: &ParserArena<ParserResult, ParserVariant>)
-                     -> IResult<&'b [u8], ParserResult> {
+    fn parse<'a>(&self,
+                 input: &'a [u8],
+                 _: &ParserNode<ParserResult, ParserVariant>,
+                 _: &ParserArena<ParserResult, ParserVariant>)
+                 -> IResult<&'a [u8], ParserResult> {
         do_parse!(input,
             d: take!(6) >>
             s: take!(6) >>

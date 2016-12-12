@@ -20,11 +20,11 @@ pub trait Parser {
     type Variant;
 
     /// Parse using nom and return the result
-    fn parse<'a, 'b>(&'a self,
-                     input: &'b [u8],
-                     node: &ParserNode<Self::Result, Self::Variant>,
-                     arena: &ParserArena<Self::Result, Self::Variant>)
-                     -> IResult<&'b [u8], Self::Result>;
+    fn parse<'a>(&self,
+                 input: &'a [u8],
+                 node: &ParserNode<Self::Result, Self::Variant>,
+                 arena: &ParserArena<Self::Result, Self::Variant>)
+                 -> IResult<&'a [u8], Self::Result>;
 
     /// Return the actual enum variant of the parser
     fn variant(&self) -> Self::Variant;
