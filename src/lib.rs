@@ -3,16 +3,18 @@
 
 #[macro_use]
 extern crate nom;
+
 #[macro_use]
 extern crate log;
+
 extern crate term;
 
-pub mod examples;
 pub mod packet;
-
 pub mod structures;
 pub mod traits;
 mod logger;
+
+use std::fmt::Display;
 
 use nom::IResult;
 use log::LogLevelFilter;
@@ -28,6 +30,9 @@ pub struct Tree<R, V> {
 
     /// The current result stack of the parsers
     pub result: Vec<R>,
+
+    /// The first node added will be the root
+    pub root: Option<NodeId>,
 }
 
 impl<R, V> Tree<R, V> {
@@ -36,6 +41,7 @@ impl<R, V> Tree<R, V> {
         Tree {
             arena: Arena::new(),
             result: vec![],
+            root: None,
         }
     }
 
@@ -59,8 +65,16 @@ impl<R, V> Tree<R, V> {
         // Create a new Parser in a Box
         let parser_box = Box::new(parser);
 
-        // Create a new node and return the node ID
-        self.arena.new_node(parser_box)
+        // Create a new node
+        let new_node = self.arena.new_node(parser_box);
+
+        // Check if the root node is already set. If not, then this will be the root
+        if let None = self.root {
+            self.root = Some(new_node);
+        }
+
+        // Return the shiny new node
+        new_node
     }
 
     /// Append the second node to the first one within the current tree structure
@@ -68,37 +82,46 @@ impl<R, V> Tree<R, V> {
         left.append(right, &mut self.arena);
     }
 
+    /// Convenient function for recursive traversal with the root as starting point
+    pub fn traverse(&self, input: &[u8], result: Vec<R>) -> Vec<R> where V: Display {
+        match self.root {
+            Some(node) => self.traverse_recursive(node, input, result),
+            None => result // TODO: Error handling
+        }
+    }
+
     /// Do parsing until all possible paths failed. This is equivalent in finding the deepest
     /// possible parsing result within the tree. The result will be assembled together in the
     /// given result vector, which will be returned at the end.
-    pub fn traverse(&self, start_node: NodeId, input: &[u8], mut result: Vec<R>) -> Vec<R> {
+    pub fn traverse_recursive(&self, start_node: NodeId, input: &[u8], mut result: Vec<R>) -> Vec<R> where V: Display {
         for node_id in start_node.following_siblings(&self.arena) {
             // Get the initial values from the arena
             let ref node = self.arena[node_id];
             let ref parser = node.data;
-            trace!("Parsing: {:?}", node_id);
 
             // Do the actual parsing work
-            match parser.parse(input, node, &self.arena) {
+            match parser.parse(input, node, &self.arena, &result) {
                 IResult::Done(input_left, parser_result) => {
                     // Adapt the result
-                    trace!("Parsing succeed, left input length: {}", input_left.len());
+                    trace!("{} parsing succeed, left input length: {}",
+                           parser.variant(), input_left.len());
                     result.push(parser_result);
 
                     // Check for further child nodes
                     match node.first_child() {
                         Some(node) => {
-                            trace!("Continue traversal at first child of the node.");
-                            result = self.traverse(node, input_left, result);
+                            trace!("Continue traversal to first child of the parser.");
+                            result = self.traverse_recursive(node, input_left, result);
                         }
                         None => {
                             trace!("No child nodes left any more, parsing done.");
-                            break;
                         }
                     }
+                    // Do not test any other parsers since we already succeed
+                    break;
                 }
-                IResult::Error(err) => trace!("Parser failed with error: {:?}", err),
-                IResult::Incomplete(err) => trace!("Parser failed: {:?}", err),
+                IResult::Error(err) => trace!("{} parser failed with error: {:?}", parser.variant(), err),
+                IResult::Incomplete(err) => trace!("{} parser failed: {:?}", parser.variant(), err),
             }
         }
         result

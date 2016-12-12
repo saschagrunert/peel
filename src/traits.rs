@@ -23,7 +23,8 @@ pub trait Parser {
     fn parse<'a>(&self,
                  input: &'a [u8],
                  node: &ParserNode<Self::Result, Self::Variant>,
-                 arena: &ParserArena<Self::Result, Self::Variant>)
+                 arena: &ParserArena<Self::Result, Self::Variant>,
+                 result: &Vec<Self::Result>)
                  -> IResult<&'a [u8], Self::Result>;
 
     /// Return the actual enum variant of the parser
