@@ -6,6 +6,10 @@ pub mod exampleparser2;
 
 /// Provides sensible imports for parsers
 pub mod prelude {
+    pub use nom::{be_u8, be_u16, be_u32, be_u64, IResult};
+    pub use traits::{Parser, ParserNode, ParserArena};
+    pub use super::{ParserResult, ParserVariant};
+
     pub use super::exampleparser1::*;
     pub use super::exampleparser2::*;
 }

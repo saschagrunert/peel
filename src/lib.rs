@@ -8,6 +8,8 @@ extern crate log;
 extern crate term;
 
 pub mod examples;
+pub mod packet;
+
 pub mod structures;
 pub mod traits;
 mod logger;
