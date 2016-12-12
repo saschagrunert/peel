@@ -2,9 +2,11 @@
 extern crate log;
 extern crate parsetree;
 
+use std::iter;
 use log::LogLevelFilter;
 
 use parsetree::Tree;
+use parsetree::structures::NodeId;
 use parsetree::packet::prelude::*;
 
 static PACKET_ETH_IPV4_TCP: &'static [u8] =
@@ -44,23 +46,44 @@ fn get_default_tree() -> Tree<Layer, ParserVariant> {
     let eth = tree.new_parser(EthernetParser);
     let ipv4 = tree.new_parser(Ipv4Parser);
     let ipv6 = tree.new_parser(Ipv6Parser);
-    let tcp = tree.new_parser(TcpParser);
-    let udp = tree.new_parser(UdpParser);
-    let tls = tree.new_parser(TlsParser);
+
+    let tcp_ipv4 = tree.new_parser(TcpParser);
+    let tcp_ipv6 = tree.new_parser(TcpParser);
+
+    let udp_ipv4 = tree.new_parser(UdpParser);
+    let udp_ipv6 = tree.new_parser(UdpParser);
+
+    let tls_ipv4 = tree.new_parser(TlsParser);
+    let tls_ipv6 = tree.new_parser(TlsParser);
 
     // Connect the parsers
     tree.link(eth, ipv4);
     tree.link(eth, ipv6);
 
-    tree.link(ipv4, tcp);
-    tree.link(ipv4, udp);
+    tree.link(ipv4, tcp_ipv4);
+    tree.link(ipv4, udp_ipv4);
 
-    tree.link(tcp, tls);
+    tree.link(tcp_ipv4, tls_ipv4);
+    tree.link(tcp_ipv6, tls_ipv6);
 
-    tree.link(ipv6, tcp);
-    tree.link(ipv6, udp);
+    tree.link(ipv6, tcp_ipv6);
+    tree.link(ipv6, udp_ipv6);
+
+    info!("The tree looks like:");
+    info!("- Eth");
+    log_children(&tree, eth, 0);
 
     tree
+}
+
+fn log_children(tree: &Tree<Layer, ParserVariant>, node: NodeId, mut level: usize) {
+    level += 2;
+    for child in node.children(&tree.arena) {
+        let indent = iter::repeat(' ').take(level).collect::<String>();
+        let ref parser = tree.arena[child].data;
+        info!("{}- {}", indent, parser.variant());
+        log_children(tree, child, level);
+    }
 }
 
 #[test]
