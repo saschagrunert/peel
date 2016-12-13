@@ -3,7 +3,6 @@ extern crate log;
 extern crate parsetree;
 
 use std::iter;
-use log::LogLevelFilter;
 
 use parsetree::packet::prelude::*;
 
@@ -38,7 +37,7 @@ static TLS_HEADER: &'static [u8] =
 fn get_default_tree() -> PacketTree {
     // Create a tree
     let mut tree = Tree::new();
-    tree.set_log_level(LogLevelFilter::Trace);
+    // tree.set_log_level(LogLevelFilter::Trace);
 
     // Create some parsers
     let eth = tree.new_parser(EthernetParser);
