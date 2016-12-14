@@ -10,7 +10,7 @@
 //! use peal::prelude::*;
 //!
 //! // Get the default tree based on the TCP/IP stack
-//! let mut peal = get_packet_peal();
+//! let peal = get_packet_peal();
 //!
 //! // Traverse the parser tree. If a parser matches check for available
 //! // child parsers. Stop parsing if there are no childs left. In this
