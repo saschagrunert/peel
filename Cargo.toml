@@ -8,5 +8,5 @@ nom = "2"
 log = "0"
 term = "0"
 
-[dev-dependencies]
+[target.'cfg(unix)'.dependencies]
 pcap = "*"
