@@ -5,7 +5,7 @@ trees which can be modified during runtime. Other stacks beside the well known T
 too.
 
 ## Example usage
-```
+```rust
 use peal::prelude::*;
 
 // Get the default tree based on the TCP/IP stack
