@@ -11,10 +11,10 @@ pub mod prelude {
     pub use std::net::{Ipv4Addr, Ipv6Addr};
     pub use nom::{be_u8, be_u16, be_u32, IResult};
 
-    pub use super::{Layer, ParserVariant, get_packet_peal};
+    pub use super::{Layer, ParserVariant, get_packet_peel};
 
     /// A general shorthand for the packet parsing tree
-    pub type PacketPeal = ::Peal<Layer, ParserVariant>;
+    pub type PacketPeel = ::Peel<Layer, ParserVariant>;
 
     /// Link
     pub use super::layer1::*;
@@ -102,10 +102,10 @@ impl fmt::Display for Layer {
     }
 }
 
-/// Returns the default `Peal` structure for all available parser variants
-pub fn get_packet_peal() -> PacketPeal {
+/// Returns the default `Peel` structure for all available parser variants
+pub fn get_packet_peel() -> PacketPeel {
     // Create a tree
-    let mut p = Peal::new();
+    let mut p = Peel::new();
 
     // Create the parsers
     let eth = p.new_parser(EthernetParser);

@@ -5,14 +5,14 @@ use std::{io, fmt};
 use term;
 
 /// The result type for the Parsing
-pub type PealResult<'a, T> = Result<T, PealError>;
+pub type PeelResult<'a, T> = Result<T, PeelError>;
 
 // Error conversion
 macro_rules! from_error {
     ($($p:ty,)*) => (
-        $(impl From<$p> for PealError {
-            fn from(err: $p) -> PealError {
-                PealError {
+        $(impl From<$p> for PeelError {
+            fn from(err: $p) -> PeelError {
+                PeelError {
                     code: ErrorType::Other,
                     description: err.description().to_owned(),
                     cause: Some(Box::new(err)),
@@ -43,7 +43,7 @@ pub enum ErrorType {
 }
 
 /// Representation for an error of the library
-pub struct PealError {
+pub struct PeelError {
     /// The error variant
     pub code: ErrorType,
 
@@ -54,7 +54,7 @@ pub struct PealError {
     pub cause: Option<Box<Error>>,
 }
 
-impl fmt::Display for PealError {
+impl fmt::Display for PeelError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f,
                "Code: {:?}, Description: {}",
@@ -63,21 +63,21 @@ impl fmt::Display for PealError {
     }
 }
 
-impl fmt::Debug for PealError {
+impl fmt::Debug for PeelError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Display::fmt(self, f)
     }
 }
 
-impl Error for PealError {
+impl Error for PeelError {
     fn description(&self) -> &str {
         &self.description
     }
 }
 
 /// Throw an internal error
-pub fn bail(code: ErrorType, description: &fmt::Display) -> PealError {
-    PealError {
+pub fn bail(code: ErrorType, description: &fmt::Display) -> PeelError {
+    PeelError {
         code: code,
         description: description.to_string(),
         cause: None,

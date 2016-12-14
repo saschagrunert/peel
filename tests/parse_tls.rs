@@ -1,5 +1,5 @@
-extern crate peal;
-use peal::prelude::*;
+extern crate peel;
+use peel::prelude::*;
 
 extern crate nom;
 use nom::{IResult, ErrorKind, Needed};

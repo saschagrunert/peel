@@ -7,17 +7,17 @@
 //! ## Example usage
 //!
 //! ```
-//! use peal::prelude::*;
+//! use peel::prelude::*;
 //!
 //! // Get the default tree based on the TCP/IP stack
-//! let peal = get_packet_peal();
+//! let peel = get_packet_peel();
 //!
 //! // Traverse the parser tree. If a parser matches check for available
 //! // child parsers. Stop parsing if there are no childs left. In this
 //! // example no parser would match because the input is no valid Ethernet
 //! // packet. The `vec![]` memory will be used for the resulting stack of
 //! // `Layer`s.
-//! let result = peal.traverse(&[0xff; 500], vec![]).unwrap();
+//! let result = peel.traverse(&[0xff; 500], vec![]).unwrap();
 //!
 //! assert_eq!(result.len(), 0);
 //! ```
@@ -50,16 +50,16 @@ use logger::Logger;
 
 /// Provides sensible imports at all
 pub mod prelude {
-    pub use super::Peal;
-    pub use error::{PealResult, PealError, ErrorType};
+    pub use super::Peel;
+    pub use error::{PeelResult, PeelError, ErrorType};
     pub use arenatree::{Arena, NodeId, Node};
     pub use parser::{Parser, ParserNode, ParserArena};
 
     pub use packet::prelude::*;
 }
 
-/// The main pealing structure
-pub struct Peal<R, V> {
+/// The main peeling structure
+pub struct Peel<R, V> {
     /// The memory arena of the tree
     pub arena: Arena<ParserBox<R, V>>,
 
@@ -70,10 +70,10 @@ pub struct Peal<R, V> {
     pub root: Option<NodeId>,
 }
 
-impl<R, V> Peal<R, V> {
-    /// Create a new emtpy `Peal` instance
+impl<R, V> Peel<R, V> {
+    /// Create a new emtpy `Peel` instance
     pub fn new() -> Self {
-        Peal {
+        Peel {
             arena: Arena::new(),
             result: vec![],
             root: None,
@@ -118,7 +118,7 @@ impl<R, V> Peal<R, V> {
     }
 
     /// Convenient function for recursive traversal with the root as starting point
-    pub fn traverse(&self, input: &[u8], result: Vec<R>) -> PealResult<Vec<R>> where V: fmt::Display {
+    pub fn traverse(&self, input: &[u8], result: Vec<R>) -> PeelResult<Vec<R>> where V: fmt::Display {
         match self.root {
             Some(node) => self.traverse_recursive(node, input, result),
             None => bail!(ErrorType::NoTreeRoot, "No tree root found"),
@@ -129,7 +129,7 @@ impl<R, V> Peal<R, V> {
     /// possible parsing result within the tree. The result will be assembled together in the
     /// given result vector, which will be returned at the end.
     pub fn traverse_recursive(&self, start_node: NodeId, input: &[u8], mut result: Vec<R>)
-        -> PealResult<Vec<R>> where V: fmt::Display {
+        -> PeelResult<Vec<R>> where V: fmt::Display {
         for node_id in start_node.following_siblings(&self.arena) {
             // Get the initial values from the arena
             let ref node = self.arena[node_id];
@@ -177,7 +177,7 @@ impl<R, V> Peal<R, V> {
     }
 }
 
-impl<K, V> fmt::Display for Peal<K, V> where V: fmt::Display {
+impl<K, V> fmt::Display for Peel<K, V> where V: fmt::Display {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.root {
             Some(node) => {

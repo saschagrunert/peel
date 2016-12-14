@@ -1,14 +1,14 @@
 #![feature(test)]
-extern crate peal;
+extern crate peel;
 extern crate test;
 
 use test::Bencher;
-use peal::prelude::*;
+use peel::prelude::*;
 
 #[bench]
 fn tree_generation(bencher: &mut Bencher) {
     bencher.iter(|| {
-        get_packet_peal();
+        get_packet_peel();
     });
 }
 
@@ -34,21 +34,21 @@ static PACKET_ETH_IPV4_TCP_TLS: &'static [u8] =
 
 #[bench]
 fn tree_parsing(bencher: &mut Bencher) {
-    let peal = get_packet_peal();
+    let peel = get_packet_peel();
     bencher.iter(|| {
-        assert!(peal.traverse(PACKET_ETH_IPV4_TCP_TLS, vec![]).is_ok());
+        assert!(peel.traverse(PACKET_ETH_IPV4_TCP_TLS, vec![]).is_ok());
     });
     bencher.bytes = PACKET_ETH_IPV4_TCP_TLS.len() as u64;
 }
 
 #[bench]
 fn tree_traverse(bencher: &mut Bencher) {
-    let peal = get_packet_peal();
-    bencher.iter(|| { for _ in peal.root.unwrap().traverse(&peal.arena) {} });
+    let peel = get_packet_peel();
+    bencher.iter(|| { for _ in peel.root.unwrap().traverse(&peel.arena) {} });
 }
 
 #[bench]
 fn tree_reverse_traverse(bencher: &mut Bencher) {
-    let peal = get_packet_peal();
-    bencher.iter(|| { for _ in peal.root.unwrap().reverse_traverse(&peal.arena) {} });
+    let peel = get_packet_peel();
+    bencher.iter(|| { for _ in peel.root.unwrap().reverse_traverse(&peel.arena) {} });
 }

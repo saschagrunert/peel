@@ -1,9 +1,9 @@
 #[macro_use]
 extern crate log;
-extern crate peal;
+extern crate peel;
 
-use peal::prelude::*;
-use peal::error::bail;
+use peel::prelude::*;
+use peel::error::bail;
 
 use log::LogLevelFilter;
 use std::error::Error;
@@ -37,10 +37,10 @@ static TLS_HEADER: &'static [u8] =
       0x0b, 0x00, 0x02, 0x01, 0x00, 0x00, 0x0a, 0x00, 0x06, 0x00, 0x04, 0x00, 0x17, 0x00, 0x18];
 
 #[test]
-fn peal_success_tcp() {
-    let mut peal = get_packet_peal();
-    peal.set_log_level(LogLevelFilter::Trace);
-    let result = peal.traverse(PACKET_ETH_IPV4_TCP, vec![]).unwrap();
+fn peel_success_tcp() {
+    let mut peel = get_packet_peel();
+    peel.set_log_level(LogLevelFilter::Trace);
+    let result = peel.traverse(PACKET_ETH_IPV4_TCP, vec![]).unwrap();
     assert_eq!(result.len(), 3);
     assert_eq!(result[0],
                Layer::Ethernet(EthernetPacket {
@@ -84,12 +84,12 @@ fn peal_success_tcp() {
 }
 
 #[test]
-fn peal_success_tls() {
-    let mut peal = get_packet_peal();
-    peal.set_log_level(LogLevelFilter::Trace);
+fn peel_success_tls() {
+    let mut peel = get_packet_peel();
+    peel.set_log_level(LogLevelFilter::Trace);
     let mut packet = Vec::from(PACKET_ETH_IPV4_TCP);
     packet.extend_from_slice(TLS_HEADER);
-    let result = peal.traverse(&packet, vec![]).unwrap();
+    let result = peel.traverse(&packet, vec![]).unwrap();
     assert_eq!(result.len(), 4);
     assert_eq!(result[3],
                Layer::Tls(TlsPacket {
@@ -103,10 +103,10 @@ fn peal_success_tls() {
 }
 
 #[test]
-fn peal_success_udp() {
-    let mut peal = get_packet_peal();
-    peal.set_log_level(LogLevelFilter::Trace);
-    let result = peal.traverse(PACKET_ETH_IPV6_UDP, vec![]).unwrap();
+fn peel_success_udp() {
+    let mut peel = get_packet_peel();
+    peel.set_log_level(LogLevelFilter::Trace);
+    let result = peel.traverse(PACKET_ETH_IPV6_UDP, vec![]).unwrap();
     assert_eq!(result.len(), 3);
     assert_eq!(result[0],
                Layer::Ethernet(EthernetPacket {
@@ -135,29 +135,29 @@ fn peal_success_udp() {
 }
 
 #[test]
-fn peal_failure_no_root() {
-    let mut peal: PacketPeal = Peal::new();
-    peal.set_log_level(LogLevelFilter::Trace);
-    match peal.traverse(&[1, 2, 3], vec![]) {
+fn peel_failure_no_root() {
+    let mut peel: PacketPeel = Peel::new();
+    peel.set_log_level(LogLevelFilter::Trace);
+    match peel.traverse(&[1, 2, 3], vec![]) {
         Err(e) => assert_eq!(e.code, ErrorType::NoTreeRoot),
         _ => {}
     }
 }
 
 #[test]
-fn peal_success_eth() {
-    let mut peal = get_packet_peal();
-    peal.set_log_level(LogLevelFilter::Trace);
+fn peel_success_eth() {
+    let mut peel = get_packet_peel();
+    peel.set_log_level(LogLevelFilter::Trace);
     let mut input = vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00];
     input.extend_from_slice(&[0xff; 500]);
-    let result = peal.traverse(&input, vec![]).unwrap();
+    let result = peel.traverse(&input, vec![]).unwrap();
     assert_eq!(result.len(), 1);
 }
 
 #[test]
-fn peal_success_log() {
-    let mut peal = get_packet_peal();
-    peal.set_log_level(LogLevelFilter::Trace);
+fn peel_success_log() {
+    let mut peel = get_packet_peel();
+    peel.set_log_level(LogLevelFilter::Trace);
     error!("Error");
     warn!("Warn");
     info!("Info");
@@ -166,7 +166,7 @@ fn peal_success_log() {
 }
 
 #[test]
-fn peal_success_error() {
+fn peel_success_error() {
     let error = bail(ErrorType::Other, &format!("Other error"));
     println!("{}", error);
     println!("{:?}", error);
