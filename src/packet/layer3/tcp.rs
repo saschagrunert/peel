@@ -1,5 +1,5 @@
 //! Transmission Control Protocol related packet processing
-use packet::prelude::*;
+use ::prelude::*;
 
 #[derive(Debug, Clone)]
 /// The TCP parser
@@ -81,21 +81,25 @@ impl Parser for TcpParser {
     /// Parse a new `Tcp` from an u8 slice
     fn parse<'a>(&self,
                  input: &'a [u8],
-                 _: &ParserNode<Layer, ParserVariant>,
-                 _: &ParserArena<Layer, ParserVariant>,
-                 result: &Vec<Layer>)
+                 _: Option<&ParserNode<Layer, ParserVariant>>,
+                 _: Option<&ParserArena<Layer, ParserVariant>>,
+                 result: Option<&Vec<Layer>>)
                  -> IResult<&'a [u8], Layer> {
         do_parse!(input,
             // Check the IP protocol from the parent parser (IPv4 or IPv6)
-            expr_opt!({
-                match result.last() {
-                    // Check the parent node for the correct IP protocol
-                    Some(&Layer::Ipv4(ref p)) if p.protocol == IpProtocol::Tcp => Some(true),
-                    Some(&Layer::Ipv6(ref p)) if p.next_header == IpProtocol::Tcp => Some(true),
+            expr_opt!(match result {
+                Some(vector) => {
+                    match vector.last() {
+                        // Check the parent node for the correct IP protocol
+                        Some(&Layer::Ipv4(ref p)) if p.protocol == IpProtocol::Tcp => Some(true),
+                        Some(&Layer::Ipv6(ref p)) if p.next_header == IpProtocol::Tcp => Some(true),
 
-                    // No previous result found, which is needed for this parser
-                    _ => None,
-                }
+                        // Previous result found, but not correct parent
+                        _ => None,
+                    }
+                },
+                // Parse also if no result is given, for testability
+                None => Some(true),
             }) >>
 
             // Parse the header
@@ -128,7 +132,7 @@ impl Parser for TcpParser {
                 window: window,
                 checksum: checksum,
                 urgent_pointer: urgent_ptr,
-                options: Vec::from(options),
+                options: options.to_vec()
             }))
         )
     }

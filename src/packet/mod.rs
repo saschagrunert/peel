@@ -3,7 +3,7 @@ pub mod layer1;
 pub mod layer2;
 pub mod layer3;
 
-use self::prelude::*;
+use prelude::*;
 use std::{fmt, str};
 
 /// Provides sensible imports for packet parsers
@@ -11,11 +11,10 @@ pub mod prelude {
     pub use std::net::{Ipv4Addr, Ipv6Addr};
     pub use nom::{be_u8, be_u16, be_u32, IResult};
 
-    pub use ::prelude::*;
-    pub use super::{Layer, ParserVariant};
+    pub use super::{Layer, ParserVariant, get_packet_peal};
 
     /// A general shorthand for the packet parsing tree
-    pub type PacketTree = Tree<Layer, ParserVariant>;
+    pub type PacketPeal = ::Peal<Layer, ParserVariant>;
 
     /// Link
     pub use super::layer1::*;
@@ -101,4 +100,39 @@ impl fmt::Display for Layer {
             Layer::Udp(_) => write!(f, "UDP"),
         }
     }
+}
+
+/// Returns the default `Peal` structure for all available parser variants
+pub fn get_packet_peal() -> PacketPeal {
+    // Create a tree
+    let mut p = Peal::new();
+
+    // Create the parsers
+    let eth = p.new_parser(EthernetParser);
+    let ipv4 = p.new_parser(Ipv4Parser);
+    let ipv6 = p.new_parser(Ipv6Parser);
+
+    let tcp_ipv4 = p.new_parser(TcpParser);
+    let tcp_ipv6 = p.new_parser(TcpParser);
+
+    let udp_ipv4 = p.new_parser(UdpParser);
+    let udp_ipv6 = p.new_parser(UdpParser);
+
+    let tls_ipv4 = p.new_parser(TlsParser);
+    let tls_ipv6 = p.new_parser(TlsParser);
+
+    // Connect the parsers
+    p.link(eth, ipv4);
+    p.link(eth, ipv6);
+
+    p.link(ipv4, tcp_ipv4);
+    p.link(ipv4, udp_ipv4);
+
+    p.link(tcp_ipv4, tls_ipv4);
+    p.link(tcp_ipv6, tls_ipv6);
+
+    p.link(ipv6, tcp_ipv6);
+    p.link(ipv6, udp_ipv6);
+
+    p
 }

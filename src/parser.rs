@@ -1,9 +1,9 @@
 //! General parser descriptions and traits
 use nom::IResult;
-use structures::{Node, Arena};
+use arenatree::{Node, Arena};
 
 /// The type which will be stored within the tree structure
-pub type ParserBox<R, V> = Box<Parser<Result = R, Variant = V>>;
+pub type ParserBox<R, V> = Box<Parser<Result = R, Variant = V> + Send + Sync>;
 
 /// Arena tree for parsers
 pub type ParserArena<R, V> = Arena<ParserBox<R, V>>;
@@ -22,9 +22,9 @@ pub trait Parser {
     /// Parse using nom and return the result
     fn parse<'a>(&self,
                  input: &'a [u8],
-                 node: &ParserNode<Self::Result, Self::Variant>,
-                 arena: &ParserArena<Self::Result, Self::Variant>,
-                 result: &Vec<Self::Result>)
+                 node: Option<&ParserNode<Self::Result, Self::Variant>>,
+                 arena: Option<&ParserArena<Self::Result, Self::Variant>>,
+                 result: Option<&Vec<Self::Result>>)
                  -> IResult<&'a [u8], Self::Result>;
 
     /// Return the actual enum variant of the parser

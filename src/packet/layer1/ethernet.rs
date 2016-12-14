@@ -1,5 +1,5 @@
 //! Ethernet related packet processing
-use packet::prelude::*;
+use ::prelude::*;
 
 #[derive(Debug, Clone)]
 /// The Ethernet parser
@@ -50,9 +50,9 @@ impl Parser for EthernetParser {
 
     fn parse<'a>(&self,
                  input: &'a [u8],
-                 _: &ParserNode<Layer, ParserVariant>,
-                 _: &ParserArena<Layer, ParserVariant>,
-                 _: &Vec<Layer>)
+                 _: Option<&ParserNode<Layer, ParserVariant>>,
+                 _: Option<&ParserArena<Layer, ParserVariant>>,
+                 _: Option<&Vec<Layer>>)
                  -> IResult<&'a [u8], Layer> {
         do_parse!(input,
             d: take!(6) >>

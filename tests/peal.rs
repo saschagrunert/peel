@@ -1,10 +1,12 @@
 #[macro_use]
 extern crate log;
-extern crate parsetree;
+extern crate peal;
 
-use std::iter;
+use peal::prelude::*;
+use peal::error::bail;
 
-use parsetree::packet::prelude::*;
+use log::LogLevelFilter;
+use std::error::Error;
 
 static PACKET_ETH_IPV4_TCP: &'static [u8] =
     &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x45, 0x00, 0x00, 0x34,
@@ -34,62 +36,11 @@ static TLS_HEADER: &'static [u8] =
       0x2f, 0x33, 0x2e, 0x31, 0x05, 0x68, 0x32, 0x2d, 0x31, 0x34, 0x02, 0x68, 0x32, 0x75, 0x50, 0x00, 0x00, 0x00,
       0x0b, 0x00, 0x02, 0x01, 0x00, 0x00, 0x0a, 0x00, 0x06, 0x00, 0x04, 0x00, 0x17, 0x00, 0x18];
 
-fn get_default_tree() -> PacketTree {
-    // Create a tree
-    let mut tree = Tree::new();
-    // tree.set_log_level(LogLevelFilter::Trace);
-
-    // Create some parsers
-    let eth = tree.new_parser(EthernetParser);
-    let ipv4 = tree.new_parser(Ipv4Parser);
-    let ipv6 = tree.new_parser(Ipv6Parser);
-
-    let tcp_ipv4 = tree.new_parser(TcpParser);
-    let tcp_ipv6 = tree.new_parser(TcpParser);
-
-    let udp_ipv4 = tree.new_parser(UdpParser);
-    let udp_ipv6 = tree.new_parser(UdpParser);
-
-    let tls_ipv4 = tree.new_parser(TlsParser);
-    let tls_ipv6 = tree.new_parser(TlsParser);
-
-    // Connect the parsers
-    tree.link(eth, ipv4);
-    tree.link(eth, ipv6);
-
-    tree.link(ipv4, tcp_ipv4);
-    tree.link(ipv4, udp_ipv4);
-
-    tree.link(tcp_ipv4, tls_ipv4);
-    tree.link(tcp_ipv6, tls_ipv6);
-
-    tree.link(ipv6, tcp_ipv6);
-    tree.link(ipv6, udp_ipv6);
-
-    dump_tree(&tree);
-    tree
-}
-
-fn dump_tree(tree: &PacketTree) {
-    info!("The tree looks like:");
-    info!("- {}", tree.arena[tree.root.unwrap()].data.variant());
-    log_children(&tree, tree.root.unwrap(), 0);
-}
-
-fn log_children(tree: &PacketTree, node: NodeId, mut level: usize) {
-    level += 2;
-    for child in node.children(&tree.arena) {
-        let indent = iter::repeat(' ').take(level).collect::<String>();
-        let ref parser = tree.arena[child].data;
-        info!("{}- {}", indent, parser.variant());
-        log_children(tree, child, level);
-    }
-}
-
 #[test]
-fn tcp() {
-    let tree = get_default_tree();
-    let result = tree.traverse(PACKET_ETH_IPV4_TCP, vec![]);
+fn peal_success_tcp() {
+    let mut peal = get_packet_peal();
+    peal.set_log_level(LogLevelFilter::Trace);
+    let result = peal.traverse(PACKET_ETH_IPV4_TCP, vec![]).unwrap();
     assert_eq!(result.len(), 3);
     assert_eq!(result[0],
                Layer::Ethernet(EthernetPacket {
@@ -130,15 +81,15 @@ fn tcp() {
                    urgent_pointer: 0,
                    options: vec![1, 1, 8, 10, 0, 2, 44, 44, 99, 147, 241, 91],
                }));
-    info!("Result [ETH, IPV4, TCP]: {:?}", result);
 }
 
 #[test]
-fn tls() {
-    let tree = get_default_tree();
+fn peal_success_tls() {
+    let mut peal = get_packet_peal();
+    peal.set_log_level(LogLevelFilter::Trace);
     let mut packet = Vec::from(PACKET_ETH_IPV4_TCP);
     packet.extend_from_slice(TLS_HEADER);
-    let result = tree.traverse(&packet, vec![]);
+    let result = peal.traverse(&packet, vec![]).unwrap();
     assert_eq!(result.len(), 4);
     assert_eq!(result[3],
                Layer::Tls(TlsPacket {
@@ -149,13 +100,13 @@ fn tls() {
                    },
                    length: 244,
                }));
-    info!("Result [ETH, IPV4, TCP, TLS]: {:?}", result);
 }
 
 #[test]
-fn udp() {
-    let tree = get_default_tree();
-    let result = tree.traverse(PACKET_ETH_IPV6_UDP, vec![]);
+fn peal_success_udp() {
+    let mut peal = get_packet_peal();
+    peal.set_log_level(LogLevelFilter::Trace);
+    let result = peal.traverse(PACKET_ETH_IPV6_UDP, vec![]).unwrap();
     assert_eq!(result.len(), 3);
     assert_eq!(result[0],
                Layer::Ethernet(EthernetPacket {
@@ -163,5 +114,61 @@ fn udp() {
                    src: Default::default(),
                    ethertype: EtherType::Ipv6,
                }));
-    info!("Result [ETH, IPV6, UDP]: {:?}", result);
+    assert_eq!(result[1],
+               Layer::Ipv6(Ipv6Packet {
+                   version: 6,
+                   traffic_class: 0,
+                   flow_label: 0,
+                   payload_length: 36,
+                   next_header: IpProtocol::Udp,
+                   hop_limit: 64,
+                   src: Ipv6Addr::new(0x3ffe, 0x507, 0, 1, 0x200, 0x86ff, 0xfe05, 0x80da),
+                   dst: Ipv6Addr::new(0x3ffe, 0x501, 0x4819, 0, 0, 0, 0, 0x42),
+               }));
+    assert_eq!(result[2],
+               Layer::Udp(UdpPacket {
+                   source_port: 2396,
+                   dest_port: 53,
+                   length: 36,
+                   checksum: 61449,
+               }));
+}
+
+#[test]
+fn peal_failure_no_root() {
+    let mut peal: PacketPeal = Peal::new();
+    peal.set_log_level(LogLevelFilter::Trace);
+    match peal.traverse(&[1, 2, 3], vec![]) {
+        Err(e) => assert_eq!(e.code, ErrorType::NoTreeRoot),
+        _ => {}
+    }
+}
+
+#[test]
+fn peal_success_eth() {
+    let mut peal = get_packet_peal();
+    peal.set_log_level(LogLevelFilter::Trace);
+    let mut input = vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00];
+    input.extend_from_slice(&[0xff; 500]);
+    let result = peal.traverse(&input, vec![]).unwrap();
+    assert_eq!(result.len(), 1);
+}
+
+#[test]
+fn peal_success_log() {
+    let mut peal = get_packet_peal();
+    peal.set_log_level(LogLevelFilter::Trace);
+    error!("Error");
+    warn!("Warn");
+    info!("Info");
+    debug!("Debug");
+    trace!("Trace");
+}
+
+#[test]
+fn peal_success_error() {
+    let error = bail(ErrorType::Other, &format!("Other error"));
+    println!("{}", error);
+    println!("{:?}", error);
+    println!("{}", error.description());
 }

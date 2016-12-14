@@ -1,9 +1,10 @@
 //! The logger implementation
 use log::{Log, LogRecord, LogLevel, LogMetadata};
-use std::error::Error;
 
 use term::stderr;
 use term::color::{BRIGHT_BLUE, GREEN, BRIGHT_YELLOW, RED};
+
+use error::{PealResult, ErrorType};
 
 /// The logging structure
 pub struct Logger;
@@ -21,13 +22,14 @@ impl Log for Logger {
 }
 
 impl Logger {
-    fn log_result(&self, record: &LogRecord) -> Result<(), Box<Error>> {
-        // We have to create a new terminal on each log because
-        // `term::Terminal<Output=std::io::Stderr> + Send + 'static` cannot be shared between
-        // threads safely'
-        let mut t = stderr().unwrap();
+    fn log_result(&self, record: &LogRecord) -> PealResult<()> {
+        // We have to create a new terminal on each log because Send is not fulfilled
+        let mut t = match stderr() {
+            Some(terminal) => terminal,
+            None => bail!(ErrorType::Internal, "Could not create terminal."),
+        };
         t.fg(BRIGHT_BLUE)?;
-        write!(t, "[parseTree] ")?;
+        write!(t, "[peal] ")?;
         match record.level() {
             LogLevel::Info => {
                 t.fg(GREEN)?;

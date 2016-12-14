@@ -1,5 +1,5 @@
 //! Transport layer security related packet processing
-use packet::prelude::*;
+use ::prelude::*;
 
 #[derive(Debug, Clone)]
 /// The TLS parser
@@ -69,9 +69,9 @@ impl Parser for TlsParser {
     /// Parse an TLS frame from an u8 slice.
     fn parse<'a>(&self,
                  input: &'a [u8],
-                 _: &ParserNode<Layer, ParserVariant>,
-                 _: &ParserArena<Layer, ParserVariant>,
-                 _: &Vec<Layer>)
+                 _: Option<&ParserNode<Layer, ParserVariant>>,
+                 _: Option<&ParserArena<Layer, ParserVariant>>,
+                 _: Option<&Vec<Layer>>)
                  -> IResult<&'a [u8], Layer> {
         do_parse!(input,
             content_type: map_opt!(be_u8, TlsRecordContentType::from_u8) >>

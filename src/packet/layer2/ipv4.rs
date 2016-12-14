@@ -1,5 +1,5 @@
 //! Internet Protocol version 4 related packet processing
-use packet::prelude::*;
+use ::prelude::*;
 
 #[derive(Debug, Clone)]
 /// The IPv4 parser
@@ -71,11 +71,26 @@ impl Parser for Ipv4Parser {
     /// Parse an IPv4 frame from an u8 slice.
     fn parse<'a>(&self,
                  input: &'a [u8],
-                 _: &ParserNode<Layer, ParserVariant>,
-                 _: &ParserArena<Layer, ParserVariant>,
-                 _: &Vec<Layer>)
+                 _: Option<&ParserNode<Layer, ParserVariant>>,
+                 _: Option<&ParserArena<Layer, ParserVariant>>,
+                 result: Option<&Vec<Layer>>)
                  -> IResult<&'a [u8], Layer> {
         do_parse!(input,
+            // Check the type from the parent parser (Ethernet)
+            expr_opt!(match result {
+                Some(vector) => {
+                    match vector.last() {
+                        // Check the parent node for the correct EtherType
+                        Some(&Layer::Ethernet(ref e)) if e.ethertype == EtherType::Ipv4 => Some(true),
+
+                        // Previous result found, but not correct parent
+                        _ => None,
+                    }
+                },
+                // Parse also if no result is given, for testability
+                None => Some(true),
+            }) >>
+
             ver_ihl: bits!(pair!(tag_bits!(u8, 4, 4),
                                  take_bits!(u8, 4))) >>
             tos: be_u8 >>
