@@ -40,8 +40,6 @@ pub mod parser;
 mod logger;
 
 use std::{fmt, iter};
-
-use nom::IResult;
 use log::LogLevelFilter;
 
 use self::prelude::*;
