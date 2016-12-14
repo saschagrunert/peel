@@ -7,6 +7,3 @@ authors = ["Sascha Grunert <mail@saschagrunert.de>"]
 nom = "2"
 log = "0"
 term = "0"
-
-[target.'cfg(unix)'.dependencies]
-pcap = "*"

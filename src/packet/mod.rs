@@ -2,6 +2,7 @@
 pub mod layer1;
 pub mod layer2;
 pub mod layer3;
+pub mod layer4;
 
 use prelude::*;
 use std::{fmt, str};
@@ -9,7 +10,7 @@ use std::{fmt, str};
 /// Provides sensible imports for packet parsers
 pub mod prelude {
     pub use std::net::{Ipv4Addr, Ipv6Addr};
-    pub use nom::{be_u8, be_u16, be_u32, IResult};
+    pub use nom::{be_u8, be_i8, be_u16, be_u32, be_u64, IResult};
 
     pub use super::{Layer, ParserVariant, get_packet_peel};
 
@@ -30,6 +31,9 @@ pub mod prelude {
     pub use super::layer3::tcp::*;
     pub use super::layer3::tls::*;
     pub use super::layer3::udp::*;
+
+    // Application
+    pub use super::layer4::ntp::*;
 }
 
 #[derive(Debug)]
@@ -52,6 +56,9 @@ pub enum ParserVariant {
 
     /// User Datagram Protocol parser
     Udp(UdpParser),
+
+    /// Network Time Protocol parser
+    Ntp(NtpParser),
 }
 
 impl fmt::Display for ParserVariant {
@@ -63,6 +70,7 @@ impl fmt::Display for ParserVariant {
             ParserVariant::Tcp(_) => write!(f, "TCP"),
             ParserVariant::Tls(_) => write!(f, "TLS"),
             ParserVariant::Udp(_) => write!(f, "UDP"),
+            ParserVariant::Ntp(_) => write!(f, "NTP"),
         }
     }
 }
@@ -87,6 +95,9 @@ pub enum Layer {
 
     /// User Datagram Protocol packet variant
     Udp(UdpPacket),
+
+    /// Network Time Protocol packet variant
+    Ntp(NtpPacket),
 }
 
 impl fmt::Display for Layer {
@@ -98,6 +109,7 @@ impl fmt::Display for Layer {
             Layer::Tcp(_) => write!(f, "TCP"),
             Layer::Tls(_) => write!(f, "TLS"),
             Layer::Udp(_) => write!(f, "UDP"),
+            Layer::Ntp(_) => write!(f, "NTP"),
         }
     }
 }
@@ -121,6 +133,9 @@ pub fn get_packet_peel() -> PacketPeel {
     let tls_ipv4 = p.new_parser(TlsParser);
     let tls_ipv6 = p.new_parser(TlsParser);
 
+    let ntp_ipv4 = p.new_parser(NtpParser);
+    let ntp_ipv6 = p.new_parser(NtpParser);
+
     // Connect the parsers
     p.link(eth, ipv4);
     p.link(eth, ipv6);
@@ -130,6 +145,9 @@ pub fn get_packet_peel() -> PacketPeel {
 
     p.link(tcp_ipv4, tls_ipv4);
     p.link(tcp_ipv6, tls_ipv6);
+
+    p.link(udp_ipv4, ntp_ipv4);
+    p.link(udp_ipv6, ntp_ipv6);
 
     p.link(ipv6, tcp_ipv6);
     p.link(ipv6, udp_ipv6);

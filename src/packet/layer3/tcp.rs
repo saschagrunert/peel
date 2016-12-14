@@ -5,7 +5,6 @@ use ::prelude::*;
 /// The TCP parser
 pub struct TcpParser;
 
-
 #[derive(Debug, Eq, PartialEq)]
 /// Representation of a Transmission Control Protocol packet
 pub struct TcpPacket {
