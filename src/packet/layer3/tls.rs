@@ -1,5 +1,5 @@
 //! Transport layer security related packet processing
-use ::prelude::*;
+use prelude::*;
 
 #[derive(Debug, Clone)]
 /// The TLS parser
@@ -71,9 +71,22 @@ impl Parser for TlsParser {
                  input: &'a [u8],
                  _: Option<&ParserNode<Layer, ParserVariant>>,
                  _: Option<&ParserArena<Layer, ParserVariant>>,
-                 _: Option<&Vec<Layer>>)
+                 result: Option<&Vec<Layer>>)
                  -> IResult<&'a [u8], Layer> {
         do_parse!(input,
+            // Check the transport protocol from the parent parser (TCP)
+            expr_opt!(match result {
+                Some(vector) => match vector.last() {
+                    // Check the parent node for the correct transport protocol
+                    Some(&Layer::Tcp(_)) => Some(true),
+
+                    // Previous result found, but not correct parent
+                    _ => None,
+                },
+                // Parse also if no result is given, for testability
+                None => Some(true),
+            }) >>
+
             content_type: map_opt!(be_u8, TlsRecordContentType::from_u8) >>
             version: take!(2) >>
             length: be_u16 >>

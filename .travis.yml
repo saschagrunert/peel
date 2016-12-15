@@ -38,6 +38,7 @@ addons:
       - libcurl4-openssl-dev
       - libelf-dev
       - libdw-dev
+      - libpcap-dev
       - binutils-dev
 env:
   global:

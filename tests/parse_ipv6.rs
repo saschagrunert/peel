@@ -2,7 +2,7 @@ extern crate peel;
 use peel::prelude::*;
 
 extern crate nom;
-use nom::{ErrorKind, Needed};
+use nom::{ErrorKind, Needed, Err};
 
 static IPV6_HEADER: &'static [u8] = &[0x60, 0x00, 0x00, 0x00, 0x00, 0x2f, 0x06, 0x40, 0x3f, 0xfe, 0x05, 0x07, 0x00,
                                       0x00, 0x00, 0x01, 0x02, 0x00, 0x86, 0xff, 0xfe, 0x05, 0x80, 0xda, 0x3f, 0xfe,
@@ -56,7 +56,8 @@ fn parse_ipv6_failure_wrong_version() {
     let mut input = Vec::from(IPV6_HEADER);
     input[0] = 0x55;
     let res = parser.parse(&input, None, None, None);
-    assert_eq!(res, IResult::Error(ErrorKind::TagBits));
+    assert_eq!(res,
+               IResult::Error(Err::Position(ErrorKind::TagBits, &input[..])));
 }
 
 #[test]
@@ -65,7 +66,8 @@ fn parse_ipv6_failure_wrong_ipprotocol() {
     let mut input = Vec::from(IPV6_HEADER);
     input[6] = 0xff;
     let res = parser.parse(&input, None, None, None);
-    assert_eq!(res, IResult::Error(ErrorKind::MapOpt));
+    assert_eq!(res,
+               IResult::Error(Err::Position(ErrorKind::MapOpt, &input[6..])));
 }
 
 #[test]

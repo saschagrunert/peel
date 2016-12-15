@@ -7,41 +7,6 @@ use term;
 /// The result type for the Parsing
 pub type PeelResult<'a, T> = Result<T, PeelError>;
 
-// Error conversion
-macro_rules! from_error {
-    ($($p:ty,)*) => (
-        $(impl From<$p> for PeelError {
-            fn from(err: $p) -> PeelError {
-                PeelError {
-                    code: ErrorType::Other,
-                    description: err.description().to_owned(),
-                    cause: Some(Box::new(err)),
-                }
-            }
-        })*
-    )
-}
-
-from_error! {
-    io::Error,
-    term::Error,
-}
-
-// Concrete error handling
-
-#[derive(Debug, PartialEq, Eq)]
-/// Error codes as indicator what happened
-pub enum ErrorType {
-    /// Internal errors which should not happen at all
-    Internal,
-
-    /// You have to add nodes to the Tree before traversing it
-    NoTreeRoot,
-
-    /// Errors not directly from the library (like OS errors)
-    Other,
-}
-
 /// Representation for an error of the library
 pub struct PeelError {
     /// The error variant
@@ -73,6 +38,39 @@ impl Error for PeelError {
     fn description(&self) -> &str {
         &self.description
     }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+/// Error codes as indicator what happened
+pub enum ErrorType {
+    /// Internal errors which should not happen at all
+    Internal,
+
+    /// You have to add nodes to the Tree before traversing it
+    NoTreeRoot,
+
+    /// Errors not directly from the library (like OS errors)
+    Other,
+}
+
+// Error conversion
+macro_rules! from_error {
+    ($($p:ty,)*) => (
+        $(impl From<$p> for PeelError {
+            fn from(err: $p) -> PeelError {
+                PeelError {
+                    code: ErrorType::Other,
+                    description: err.description().to_owned(),
+                    cause: Some(Box::new(err)),
+                }
+            }
+        })*
+    )
+}
+
+from_error! {
+    io::Error,
+    term::Error,
 }
 
 /// Throw an internal error

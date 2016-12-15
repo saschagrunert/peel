@@ -1,5 +1,5 @@
 //! User Datagram Protocol related packet processing
-use ::prelude::*;
+use prelude::*;
 
 #[derive(Debug, Clone)]
 /// The UDP parser
@@ -49,15 +49,13 @@ impl Parser for UdpParser {
         do_parse!(input,
             // Check the IP protocol from the parent parser (IPv4 or IPv6)
             expr_opt!(match result {
-                Some(vector) => {
-                    match vector.last() {
-                        // Check the parent node for the correct IP protocol
-                        Some(&Layer::Ipv4(ref p)) if p.protocol == IpProtocol::Udp => Some(true),
-                        Some(&Layer::Ipv6(ref p)) if p.next_header == IpProtocol::Udp => Some(true),
+                Some(vector) => match vector.last() {
+                    // Check the parent node for the correct IP protocol
+                    Some(&Layer::Ipv4(ref p)) if p.protocol == IpProtocol::Udp => Some(true),
+                    Some(&Layer::Ipv6(ref p)) if p.next_header == IpProtocol::Udp => Some(true),
 
-                        // Previous result found, but not correct parent
-                        _ => None,
-                    }
+                    // Previous result found, but not correct parent
+                    _ => None,
                 },
                 // Parse also if no result is given, for testability
                 None => Some(true),

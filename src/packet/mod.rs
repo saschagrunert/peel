@@ -12,7 +12,7 @@ pub mod prelude {
     pub use std::net::{Ipv4Addr, Ipv6Addr};
     pub use nom::{be_u8, be_i8, be_u16, be_u32, be_u64, IResult};
 
-    pub use super::{Layer, ParserVariant, get_packet_peel};
+    pub use super::{Layer, ParserVariant, default_peel};
 
     /// A general shorthand for the packet parsing tree
     pub type PacketPeel = ::Peel<Layer, ParserVariant>;
@@ -33,6 +33,7 @@ pub mod prelude {
     pub use super::layer3::udp::*;
 
     // Application
+    pub use super::layer4::http::*;
     pub use super::layer4::ntp::*;
 }
 
@@ -54,6 +55,9 @@ pub enum ParserVariant {
     /// Transport Layer Security parser
     Tls(TlsParser),
 
+    /// Hypertext Transfer Protocol parser
+    Http(HttpParser),
+
     /// User Datagram Protocol parser
     Udp(UdpParser),
 
@@ -69,6 +73,7 @@ impl fmt::Display for ParserVariant {
             ParserVariant::Ipv6(_) => write!(f, "IPv6"),
             ParserVariant::Tcp(_) => write!(f, "TCP"),
             ParserVariant::Tls(_) => write!(f, "TLS"),
+            ParserVariant::Http(_) => write!(f, "HTTP"),
             ParserVariant::Udp(_) => write!(f, "UDP"),
             ParserVariant::Ntp(_) => write!(f, "NTP"),
         }
@@ -93,6 +98,9 @@ pub enum Layer {
     /// Transport Layer Security packet variant
     Tls(TlsPacket),
 
+    /// Hypertext Transfer Protocol packet variant
+    Http(Option<HttpPacket>),
+
     /// User Datagram Protocol packet variant
     Udp(UdpPacket),
 
@@ -108,6 +116,7 @@ impl fmt::Display for Layer {
             Layer::Ipv6(_) => write!(f, "IPv6"),
             Layer::Tcp(_) => write!(f, "TCP"),
             Layer::Tls(_) => write!(f, "TLS"),
+            Layer::Http(_) => write!(f, "HTTP"),
             Layer::Udp(_) => write!(f, "UDP"),
             Layer::Ntp(_) => write!(f, "NTP"),
         }
@@ -115,42 +124,38 @@ impl fmt::Display for Layer {
 }
 
 /// Returns the default `Peel` structure for all available parser variants
-pub fn get_packet_peel() -> PacketPeel {
+pub fn default_peel() -> PacketPeel {
     // Create a tree
     let mut p = Peel::new();
 
-    // Create the parsers
+    // Ethernet
     let eth = p.new_parser(EthernetParser);
-    let ipv4 = p.new_parser(Ipv4Parser);
-    let ipv6 = p.new_parser(Ipv6Parser);
 
-    let tcp_ipv4 = p.new_parser(TcpParser);
-    let tcp_ipv6 = p.new_parser(TcpParser);
+    // IPv4/6
+    let ipv4 = p.link_new_parser(eth, Ipv4Parser);
+    let ipv6 = p.link_new_parser(eth, Ipv6Parser);
 
-    let udp_ipv4 = p.new_parser(UdpParser);
-    let udp_ipv6 = p.new_parser(UdpParser);
+    // TCP
+    let tcp_ipv4 = p.link_new_parser(ipv4, TcpParser);
+    let tcp_ipv6 = p.link_new_parser(ipv6, TcpParser);
 
-    let tls_ipv4 = p.new_parser(TlsParser);
-    let tls_ipv6 = p.new_parser(TlsParser);
+    // UDP
+    let udp_ipv4 = p.link_new_parser(ipv4, UdpParser);
+    let udp_ipv6 = p.link_new_parser(ipv6, UdpParser);
 
-    let ntp_ipv4 = p.new_parser(NtpParser);
-    let ntp_ipv6 = p.new_parser(NtpParser);
+    // TLS
+    let tls_ipv4 = p.link_new_parser(tcp_ipv4, TlsParser);
+    let tls_ipv6 = p.link_new_parser(tcp_ipv6, TlsParser);
 
-    // Connect the parsers
-    p.link(eth, ipv4);
-    p.link(eth, ipv6);
+    // HTTP
+    p.link_new_parser(tcp_ipv4, HttpParser);
+    p.link_new_parser(tcp_ipv6, HttpParser);
+    p.link_new_parser(tls_ipv4, HttpParser);
+    p.link_new_parser(tls_ipv6, HttpParser);
 
-    p.link(ipv4, tcp_ipv4);
-    p.link(ipv4, udp_ipv4);
-
-    p.link(tcp_ipv4, tls_ipv4);
-    p.link(tcp_ipv6, tls_ipv6);
-
-    p.link(udp_ipv4, ntp_ipv4);
-    p.link(udp_ipv6, ntp_ipv6);
-
-    p.link(ipv6, tcp_ipv6);
-    p.link(ipv6, udp_ipv6);
+    // NTP
+    p.link_new_parser(udp_ipv4, NtpParser);
+    p.link_new_parser(udp_ipv6, NtpParser);
 
     p
 }

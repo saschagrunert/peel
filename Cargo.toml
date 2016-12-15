@@ -4,6 +4,12 @@ version = "0.1.0"
 authors = ["Sascha Grunert <mail@saschagrunert.de>"]
 
 [dependencies]
-nom = "2"
+lazy_static = "0"
 log = "0"
+nom = {version = "2", features = ["regexp_macros", "verbose-errors"]}
+regex = "0"
 term = "0"
+
+[dev-dependencies]
+pcap = "*"
+time = "*"

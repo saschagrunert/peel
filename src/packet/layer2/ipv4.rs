@@ -1,5 +1,5 @@
 //! Internet Protocol version 4 related packet processing
-use ::prelude::*;
+use prelude::*;
 
 #[derive(Debug, Clone)]
 /// The IPv4 parser
@@ -78,14 +78,12 @@ impl Parser for Ipv4Parser {
         do_parse!(input,
             // Check the type from the parent parser (Ethernet)
             expr_opt!(match result {
-                Some(vector) => {
-                    match vector.last() {
-                        // Check the parent node for the correct EtherType
-                        Some(&Layer::Ethernet(ref e)) if e.ethertype == EtherType::Ipv4 => Some(true),
+                Some(vector) => match vector.last() {
+                    // Check the parent node for the correct EtherType
+                    Some(&Layer::Ethernet(ref e)) if e.ethertype == EtherType::Ipv4 => Some(true),
 
-                        // Previous result found, but not correct parent
-                        _ => None,
-                    }
+                    // Previous result found, but not correct parent
+                    _ => None,
                 },
                 // Parse also if no result is given, for testability
                 None => Some(true),

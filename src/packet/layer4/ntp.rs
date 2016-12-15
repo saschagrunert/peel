@@ -1,5 +1,5 @@
 //! Network Time Protocol related packet processing
-use ::prelude::*;
+use prelude::*;
 
 #[derive(Debug, Clone)]
 /// The UDP parser

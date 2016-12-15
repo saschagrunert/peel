@@ -2,7 +2,7 @@ extern crate peel;
 use peel::prelude::*;
 
 extern crate nom;
-use nom::{ErrorKind, Needed};
+use nom::{ErrorKind, Needed, Err};
 
 static ETH_HEADER: &'static [u8] = &[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 8, 0];
 
@@ -47,7 +47,8 @@ fn parse_eth_failure_wrong_ethertype() {
     let mut input = Vec::from(ETH_HEADER);
     input[13] = 0x55;
     let res = parser.parse(&input, None, None, None);
-    assert_eq!(res, IResult::Error(ErrorKind::MapOpt));
+    assert_eq!(res,
+               IResult::Error(Err::Position(ErrorKind::MapOpt, &input[12..])));
 }
 
 #[test]

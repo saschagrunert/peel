@@ -1,5 +1,5 @@
 //! Ethernet related packet processing
-use ::prelude::*;
+use prelude::*;
 
 #[derive(Debug, Clone)]
 /// The Ethernet parser

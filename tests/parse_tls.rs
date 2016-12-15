@@ -2,7 +2,7 @@ extern crate peel;
 use peel::prelude::*;
 
 extern crate nom;
-use nom::{ErrorKind, Needed};
+use nom::{ErrorKind, Needed, Err};
 
 static TLS_HEADER: &'static [u8] =
     &[0x16, 0x03, 0x01, 0x00, 0xf4, 0x01, 0x00, 0x00, 0xf0, 0x03, 0x03, 0x14, 0x5b, 0x92, 0xc3, 0xcd, 0x27, 0xe0,
@@ -68,7 +68,7 @@ fn parse_tls_failure_content_type() {
     let mut input = Vec::from(TLS_HEADER);
     input[0] = 0;
     assert_eq!(parser.parse(&input, None, None, None),
-               IResult::Error(ErrorKind::MapOpt));
+               IResult::Error(Err::Position(ErrorKind::MapOpt, &input[..])));
 }
 
 #[test]
