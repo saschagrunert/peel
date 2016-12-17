@@ -9,7 +9,3 @@ log = "0"
 nom = {version = "2", features = ["regexp_macros", "verbose-errors"]}
 regex = "0"
 term = "0"
-
-[dev-dependencies]
-pcap = "*"
-time = "*"
