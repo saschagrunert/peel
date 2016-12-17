@@ -7,11 +7,13 @@ use nom::{ErrorKind, Needed, Err};
 #[test]
 fn parse_http_success() {
     let parser = HttpParser;
-    let res = parser.parse(b"GET /\r\nHost: myhost.com\r\n\r\n", None, None, None).unwrap();
-    println!("{}", res.1);
-    assert_eq!(res.1,
+    let res = parser.parse(b"GET /\r\nHost: myhost.com\r\n\r\n", None, None, None).unwrap().1;
+    println!("{}", res.0);
+    assert_eq!(res.0,
                Layer::Http(Some(HttpPacket { request_method: HttpRequestMethod::Get })));
-    assert_eq!(parser.parse(b"POST /\r\nHost: myhost.com\r\n\r\n", None, None, None).unwrap().1,
+
+    let res = parser.parse(b"POST /\r\nHost: myhost.com\r\n\r\n", None, None, None).unwrap().1;
+    assert_eq!(res.0,
                Layer::Http(Some(HttpPacket { request_method: HttpRequestMethod::Post })));
 }
 

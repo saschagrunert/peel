@@ -74,7 +74,7 @@ impl Parser for Ipv4Parser {
                  _: Option<&ParserNode<Layer, ParserVariant>>,
                  _: Option<&ParserArena<Layer, ParserVariant>>,
                  result: Option<&Vec<Layer>>)
-                 -> IResult<&'a [u8], Layer> {
+                 -> IResult<&'a [u8], (Layer, ParserState)> {
         do_parse!(input,
             // Check the type from the parent parser (Ethernet)
             expr_opt!(match result {
@@ -101,7 +101,7 @@ impl Parser for Ipv4Parser {
             src: map!(be_u32, Ipv4Addr::from) >>
             dst: map!(be_u32, Ipv4Addr::from) >>
 
-            (Layer::Ipv4(Ipv4Packet {
+            ((Layer::Ipv4(Ipv4Packet {
                 version: ver_ihl.0,
                 ihl: ver_ihl.1 << 2,
                 tos: tos,
@@ -113,7 +113,7 @@ impl Parser for Ipv4Parser {
                 checksum: checksum,
                 src: src,
                 dst: dst,
-            }))
+            })), ParserState::ContinueWithFirstChild)
         )
     }
 

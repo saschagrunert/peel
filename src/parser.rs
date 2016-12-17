@@ -25,8 +25,18 @@ pub trait Parser {
                  node: Option<&ParserNode<Self::Result, Self::Variant>>,
                  arena: Option<&ParserArena<Self::Result, Self::Variant>>,
                  result: Option<&Vec<Self::Result>>)
-                 -> IResult<&'a [u8], Self::Result>;
+                 -> IResult<&'a [u8], (Self::Result, ParserState)>;
 
     /// Return the actual enum variant of the parser
     fn variant(&self) -> Self::Variant;
+}
+
+#[derive(Debug, Eq, PartialEq)]
+/// Possible actions to be done if a parser succeed
+pub enum ParserState {
+    /// Default behavior, continue traversing the Parser tree with the next child
+    ContinueWithFirstChild,
+
+    /// Immediately stop the parsing
+    Stop,
 }

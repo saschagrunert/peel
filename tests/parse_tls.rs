@@ -29,22 +29,17 @@ fn tls_parser_variant() {
 #[test]
 fn parse_tls_success() {
     let parser = TlsParser;
-    let res = parser.parse(TLS_HEADER, None, None, None).unwrap();
-    println!("{}", res.1);
-    match res {
-        (_, Layer::Tls(tls)) => {
-            assert_eq!(TlsPacket {
-                           content_type: TlsRecordContentType::Handshake,
-                           version: TlsRecordVersion {
-                               major: 3,
-                               minor: 1,
-                           },
-                           length: 244,
-                       },
-                       tls);
-        }
-        _ => {}
-    }
+    let res = parser.parse(TLS_HEADER, None, None, None).unwrap().1;
+    println!("{}", res.0);
+    assert_eq!(Layer::Tls(TlsPacket {
+                   content_type: TlsRecordContentType::Handshake,
+                   version: TlsRecordVersion {
+                       major: 3,
+                       minor: 1,
+                   },
+                   length: 244,
+               }),
+               res.0);
 }
 
 #[test]

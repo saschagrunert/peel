@@ -238,8 +238,8 @@ impl NodeId {
             if let Some(first_child) = first_child_opt {
                 new_child_borrow.next_sibling = Some(first_child);
             } else {
-                debug_assert!(&self_borrow.first_child.is_none());
                 self_borrow.last_child = Some(new_child);
+                debug_assert!(&self_borrow.first_child.is_none());
             }
         }
         if let Some(first_child) = first_child_opt {
@@ -477,5 +477,19 @@ impl<'a, T> Iterator for ReverseTraverse<'a, T> {
             }
             None => None,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use arenatree::GetPairMut;
+
+    #[test]
+    #[should_panic]
+    fn arena_panic() {
+        let arena = &mut Arena::new();
+        arena.new_node(0);
+        arena.nodes.get_pair_mut(0, 0, "Can not append a node to itself");
     }
 }

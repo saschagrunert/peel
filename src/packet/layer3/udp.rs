@@ -45,7 +45,7 @@ impl Parser for UdpParser {
                  _: Option<&ParserNode<Layer, ParserVariant>>,
                  _: Option<&ParserArena<Layer, ParserVariant>>,
                  result: Option<&Vec<Layer>>)
-                 -> IResult<&'a [u8], Layer> {
+                 -> IResult<&'a [u8], (Layer, ParserState)> {
         do_parse!(input,
             // Check the IP protocol from the parent parser (IPv4 or IPv6)
             expr_opt!(match result {
@@ -67,12 +67,12 @@ impl Parser for UdpParser {
             len: be_u16 >>
             checksum: be_u16 >>
 
-            (Layer::Udp(UdpPacket {
+            ((Layer::Udp(UdpPacket {
                 source_port: src,
                 dest_port: dst,
                 length: len,
                 checksum: checksum,
-            }))
+            })), ParserState::ContinueWithFirstChild)
         )
     }
 

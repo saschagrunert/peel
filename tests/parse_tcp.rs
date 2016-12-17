@@ -17,32 +17,27 @@ fn tcp_parser_variant() {
 #[test]
 fn parse_tcp_success() {
     let parser = TcpParser;
-    let res = parser.parse(TCP_HEADER, None, None, None).unwrap();
-    println!("{}", res.1);
-    match res {
-        (_, Layer::Tcp(tcp)) => {
-            assert_eq!(TcpPacket {
-                           source_port: 51781,
-                           dest_port: 443,
-                           sequence_no: 2556845834,
-                           ack_no: 1151172357,
-                           data_offset: 32,
-                           reserved: 0,
-                           flag_urg: false,
-                           flag_ack: true,
-                           flag_psh: true,
-                           flag_rst: false,
-                           flag_syn: false,
-                           flag_fin: false,
-                           window: 8192,
-                           checksum: 3868,
-                           urgent_pointer: 0,
-                           options: TCP_HEADER[20..].to_vec(),
-                       },
-                       tcp)
-        }
-        _ => {}
-    }
+    let res = parser.parse(TCP_HEADER, None, None, None).unwrap().1;
+    println!("{}", res.0);
+    assert_eq!(Layer::Tcp(TcpPacket {
+                   source_port: 51781,
+                   dest_port: 443,
+                   sequence_no: 2556845834,
+                   ack_no: 1151172357,
+                   data_offset: 32,
+                   reserved: 0,
+                   flag_urg: false,
+                   flag_ack: true,
+                   flag_psh: true,
+                   flag_rst: false,
+                   flag_syn: false,
+                   flag_fin: false,
+                   window: 8192,
+                   checksum: 3868,
+                   urgent_pointer: 0,
+                   options: TCP_HEADER[20..].to_vec(),
+               }),
+               res.0);
 }
 
 #[test]

@@ -15,20 +15,15 @@ fn udp_parser_variant() {
 #[test]
 fn parse_udp_success() {
     let parser = UdpParser;
-    let res = parser.parse(UDP_HEADER, None, None, None).unwrap();
-    println!("{}", res.1);
-    match res {
-        (_, Layer::Udp(udp)) => {
-            assert_eq!(UdpPacket {
-                           source_port: 53,
-                           dest_port: 51166,
-                           length: 146,
-                           checksum: 44315,
-                       },
-                       udp);
-        }
-        _ => {}
-    }
+    let res = parser.parse(UDP_HEADER, None, None, None).unwrap().1;
+    println!("{}", res.0);
+    assert_eq!(Layer::Udp(UdpPacket {
+                   source_port: 53,
+                   dest_port: 51166,
+                   length: 146,
+                   checksum: 44315,
+               }),
+               res.0);
 }
 
 #[test]

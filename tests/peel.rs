@@ -173,6 +173,7 @@ fn peel_success_ntp() {
 fn peel_failure_no_root() {
     let mut peel: PacketPeel = Peel::new();
     peel.set_log_level(LogLevelFilter::Trace);
+    println!("{}", peel);
     match peel.traverse(&[1, 2, 3], vec![]) {
         Err(e) => assert_eq!(e.code, ErrorType::NoTreeRoot),
         _ => {}

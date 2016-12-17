@@ -82,8 +82,6 @@ pub fn bail(code: ErrorType, description: &fmt::Display) -> PeelError {
     }
 }
 
-macro_rules! bail {
-    ($code:expr, $($fmt:tt)*) => (
-        return Err(::error::bail($code, &format_args!($($fmt)*)))
-    )
-}
+macro_rules! bail {($code:expr, $($fmt:tt)*) => (
+    return Err(::error::bail($code, &format_args!($($fmt)*)))
+)}

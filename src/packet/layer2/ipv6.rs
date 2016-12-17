@@ -55,7 +55,7 @@ impl Parser for Ipv6Parser {
                  _: Option<&ParserNode<Layer, ParserVariant>>,
                  _: Option<&ParserArena<Layer, ParserVariant>>,
                  result: Option<&Vec<Layer>>)
-                 -> IResult<&'a [u8], Layer> {
+                 -> IResult<&'a [u8], (Layer, ParserState)> {
         do_parse!(input,
             // Check the type from the parent parser (Ethernet)
             expr_opt!(match result {
@@ -79,7 +79,7 @@ impl Parser for Ipv6Parser {
             src: tuple!(be_u16, be_u16, be_u16, be_u16, be_u16, be_u16, be_u16, be_u16) >>
             dst: tuple!(be_u16, be_u16, be_u16, be_u16, be_u16, be_u16, be_u16, be_u16) >>
 
-            (Layer::Ipv6(Ipv6Packet {
+            ((Layer::Ipv6(Ipv6Packet {
                 version: ver_tc_fl.0,
                 traffic_class: ver_tc_fl.1,
                 flow_label: ver_tc_fl.2,
@@ -90,7 +90,7 @@ impl Parser for Ipv6Parser {
                                    src.4, src.5, src.6, src.7),
                 dst: Ipv6Addr::new(dst.0, dst.1, dst.2, dst.3,
                                    dst.4, dst.5, dst.6, dst.7),
-            }))
+            })), ParserState::ContinueWithFirstChild)
         )
     }
 

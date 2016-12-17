@@ -71,7 +71,7 @@ impl Parser for HttpParser {
                  _: Option<&ParserNode<Layer, ParserVariant>>,
                  _: Option<&ParserArena<Layer, ParserVariant>>,
                  result: Option<&Vec<Layer>>)
-                 -> IResult<&'a [u8], Layer> {
+                 -> IResult<&'a [u8], (Layer, ParserState)> {
         do_parse!(input,
 
             // Check the transport protocol from the parent parser (TCP or TLS)
@@ -89,7 +89,7 @@ impl Parser for HttpParser {
                 apply!(HttpPacket::parse_tls_based, result)
             ) >>
 
-            (result)
+            ((result, ParserState::ContinueWithFirstChild))
         )
     }
 

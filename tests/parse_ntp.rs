@@ -13,30 +13,25 @@ static NTP_HEADER: &'static [u8] =
 #[test]
 fn parse_ntp_success() {
     let parser = NtpParser;
-    let res = parser.parse(NTP_HEADER, None, None, None).unwrap();
-    println!("{}", res.1);
-    match res {
-        (_, Layer::Ntp(ntp)) => {
-            assert_eq!(NtpPacket {
-                           li: 0,
-                           version: 4,
-                           mode: 3,
-                           stratum: 0,
-                           poll: 0,
-                           precision: 0,
-                           root_delay: 12,
-                           root_dispersion: 0,
-                           ref_id: 0,
-                           ts_ref: 0,
-                           ts_orig: 0,
-                           ts_recv: 0,
-                           ts_xmit: 14710388140573593600,
-                           auth: Some((1, NTP_HEADER[52..].to_vec())),
-                       },
-                       ntp);
-        }
-        _ => {}
-    }
+    let res = parser.parse(NTP_HEADER, None, None, None).unwrap().1;
+    println!("{}", res.0);
+    assert_eq!(Layer::Ntp(NtpPacket {
+                   li: 0,
+                   version: 4,
+                   mode: 3,
+                   stratum: 0,
+                   poll: 0,
+                   precision: 0,
+                   root_delay: 12,
+                   root_dispersion: 0,
+                   ref_id: 0,
+                   ts_ref: 0,
+                   ts_orig: 0,
+                   ts_recv: 0,
+                   ts_xmit: 14710388140573593600,
+                   auth: Some((1, NTP_HEADER[52..].to_vec())),
+               }),
+               res.0);
 }
 
 #[test]

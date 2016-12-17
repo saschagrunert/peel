@@ -63,7 +63,7 @@ pub mod prelude {
     pub use super::Peel;
     pub use error::{PeelResult, PeelError, ErrorType};
     pub use arenatree::{Arena, NodeId, Node};
-    pub use parser::{Parser, ParserNode, ParserArena};
+    pub use parser::{Parser, ParserNode, ParserArena, ParserState};
 
     pub use packet::prelude::*;
 }
@@ -134,11 +134,8 @@ impl<R, V> Peel<R, V> {
     pub fn new_parser<T>(&mut self, parser: T) -> NodeId
         where T: Parser<Result = R, Variant = V> + Send + Sync + 'static
     {
-        // Create a new Parser in a Box
-        let parser_box = Box::new(parser);
-
         // Create a new node
-        let new_node = self.arena.new_node(parser_box);
+        let new_node = self.arena.new_node(Box::new(parser));
 
         // Check if the root node is already set. If not, then this will be the root
         if let None = self.root {
@@ -222,22 +219,27 @@ impl<R, V> Peel<R, V> {
 
             // Do the actual parsing work
             match parser.parse(input, Some(node), Some(&self.arena), Some(&result)) {
-                IResult::Done(input_left, parser_result) => {
+                IResult::Done(input_left, (parser_result, state)) => {
                     // Adapt the result
                     debug!("{} parsing succeed, left input length: {}",
                            parser.variant(), input_left.len());
                     result.push(parser_result);
 
-                    // Check for further child nodes
-                    match node.first_child() {
-                        Some(node) => {
-                            debug!("Continue traversal to first child of the parser.");
-                            result = self.traverse_recursive(node, input_left, result)?;
-                        }
-                        None => {
-                            debug!("No child nodes left any more, parsing done.");
-                        }
+                    // Check the parser state
+                    match state {
+                         ParserState::ContinueWithFirstChild => {
+                            // Check for further child nodes
+                            match node.first_child() {
+                                Some(node) => {
+                                    debug!("Continue traversal to first child of the parser.");
+                                    result = self.traverse_recursive(node, input_left, result)?;
+                                }
+                                None => debug!("No child nodes left any more, parsing done."),
+                            }
+                         }
+                         ParserState::Stop => {}
                     }
+
                     // Do not test any other parsers since we already succeed
                     break;
                 }
@@ -288,7 +290,7 @@ impl<R, V> Peel<R, V> {
     /// let res = parser.parse(&eth_header, None, None, None);
     /// peel.display_error(&eth_header, res);
     /// ```
-    pub fn display_error(&self, input: &[u8], res: IResult<&[u8], R>) {
+    pub fn display_error(&self, input: &[u8], res: IResult<&[u8], (R, ParserState)>) {
         let mut h: HashMap<u32, &str> = HashMap::new();
         let parsers = ["Custom", "Tag", "MapRes", "MapOpt", "Alt", "IsNot", "IsA", "SeparatedList",
                        "SeparatedNonEmptyList", "Many1", "Count", "TakeUntilAndConsume",

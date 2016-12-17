@@ -72,7 +72,7 @@ impl Parser for TlsParser {
                  _: Option<&ParserNode<Layer, ParserVariant>>,
                  _: Option<&ParserArena<Layer, ParserVariant>>,
                  result: Option<&Vec<Layer>>)
-                 -> IResult<&'a [u8], Layer> {
+                 -> IResult<&'a [u8], (Layer, ParserState)> {
         do_parse!(input,
             // Check the transport protocol from the parent parser (TCP)
             expr_opt!(match result {
@@ -91,14 +91,14 @@ impl Parser for TlsParser {
             version: take!(2) >>
             length: be_u16 >>
 
-            (Layer::Tls(TlsPacket {
+            ((Layer::Tls(TlsPacket {
                 content_type: content_type,
                 version: TlsRecordVersion {
                     major: version[0],
                     minor: version[1],
                 },
                 length: length,
-            }))
+            })), ParserState::ContinueWithFirstChild)
         )
     }
 

@@ -16,27 +16,23 @@ fn ipv4_parser_variant() {
 #[test]
 fn parse_ipv4_success() {
     let parser = Ipv4Parser;
-    let res = parser.parse(IPV4_HEADER, None, None, None).unwrap();
-    println!("{}", res.1);
-    match res {
-        (_, Layer::Ipv4(ipv4)) => {
-            assert_eq!(Ipv4Packet {
-                           version: 4,
-                           ihl: 20,
-                           tos: 0,
-                           length: 421,
-                           id: 54883,
-                           flags_and_fragment_offset: 16384,
-                           ttl: 63,
-                           protocol: IpProtocol::Tcp,
-                           checksum: 39932,
-                           src: Ipv4Addr::new(192, 168, 1, 10),
-                           dst: Ipv4Addr::new(173, 252, 88, 68),
-                       },
-                       ipv4)
-        }
-        _ => {}
-    }
+    let res = parser.parse(IPV4_HEADER, None, None, None).unwrap().1;
+    println!("{}", res.0);
+    assert_eq!(Layer::Ipv4(Ipv4Packet {
+                   version: 4,
+                   ihl: 20,
+                   tos: 0,
+                   length: 421,
+                   id: 54883,
+                   flags_and_fragment_offset: 16384,
+                   ttl: 63,
+                   protocol: IpProtocol::Tcp,
+                   checksum: 39932,
+                   src: Ipv4Addr::new(192, 168, 1, 10),
+                   dst: Ipv4Addr::new(173, 252, 88, 68),
+               }),
+               res.0);
+    assert_eq!(res.1, ParserState::ContinueWithFirstChild);
 }
 
 #[test]

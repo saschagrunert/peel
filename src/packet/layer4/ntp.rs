@@ -64,7 +64,7 @@ impl Parser for NtpParser {
                  _: Option<&ParserNode<Layer, ParserVariant>>,
                  _: Option<&ParserArena<Layer, ParserVariant>>,
                  result: Option<&Vec<Layer>>)
-                 -> IResult<&'a [u8], Layer> {
+                 -> IResult<&'a [u8], (Layer, ParserState)> {
         do_parse!(input,
             // Check the transport protocol from the parent parser (UDP)
             expr_opt!(match result {
@@ -97,7 +97,7 @@ impl Parser for NtpParser {
             auth: opt!(complete!(pair!(be_u32,
                                  map!(take!(16), Vec::from)))) >>
 
-            (Layer::Ntp(NtpPacket {
+            ((Layer::Ntp(NtpPacket {
                 li: b0.0,
                 version: b0.1,
                 mode: b0.2,
@@ -112,7 +112,7 @@ impl Parser for NtpParser {
                 ts_recv: tsv,
                 ts_xmit: tsx,
                 auth: auth,
-            }))
+            })), ParserState::ContinueWithFirstChild)
         )
     }
 
