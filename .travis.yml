@@ -10,7 +10,7 @@ before_install:
   - export OPENSSL_INCLUDE_DIR=`brew --prefix openssl`/include
   - export OPENSSL_LIB_DIR=`brew --prefix openssl`/lib
 before_script:
-  - if [[ "$TRAVIS_RUST_VERSION" == "stable" ]] && [[ "$TRAVIS_OS_NAME" == "linux" ]]; then wget http://www.tcpdump.org/release/libpcap-1.8.1.tar.gz && tar xfvz libpcap-1.8.1.tar.gz && pushd libpcap-1.8.1 && ./configure && sudo make install && popd; fi
+  - if [[ "$TRAVIS_RUST_VERSION" == "stable" ]] && [[ "$TRAVIS_OS_NAME" == "linux" ]]; sudo apt-get remove libpcap-dev && then wget http://www.tcpdump.org/release/libpcap-1.8.1.tar.gz && tar xfvz libpcap-1.8.1.tar.gz && pushd libpcap-1.8.1 && ./configure && sudo make install && popd; fi
   - pip install 'travis-cargo<0.2' --user --verbose
   - export PATH=$HOME/.local/bin:$PATH
   - export PATH=$HOME/Library/Python/2.7/bin:$PATH
