@@ -11,6 +11,7 @@ before_install:
   - export OPENSSL_LIB_DIR=`brew --prefix openssl`/lib
 before_script:
   - pip install 'travis-cargo<0.2' --user --verbose
+  - sudo apt-get install libpcap-dev
   - export PATH=$HOME/.local/bin:$PATH
   - export PATH=$HOME/Library/Python/2.7/bin:$PATH
   - cargo install cargo-kcov
@@ -38,7 +39,6 @@ addons:
       - libcurl4-openssl-dev
       - libelf-dev
       - libdw-dev
-      - libpcap-dev
       - binutils-dev
 env:
   global:
