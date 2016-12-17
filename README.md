@@ -11,12 +11,13 @@ use peel::prelude::*;
 // Get the default tree based on the TCP/IP stack
 let peel = default_peel();
 
-// Traverse the parser tree. If a parser matches check for available
-// child parsers. Stop parsing if there are no childs left. In this
-// example no parser would match because the input is no valid Ethernet
-// packet. The `vec![]` memory will be used for the resulting stack of
-// `Layer`s.
-let result = peel.traverse(&[0xff; 500], vec![]).unwrap();
+let eth_header = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 8, 0];
 
-assert_eq!(result.len(), 0);
+// Traverse the parser tree. If a parser matches check for available child parsers.
+// Stop parsing if there are no childs left. The `vec![]` memory will be used for
+// the resulting stack of `Layer`s.
+let result = peel.traverse(&eth_header, vec![]).unwrap();
+
+// There should be one parsed EthernetPacket in:
+assert_eq!(result.len(), 1);
 ```
