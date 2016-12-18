@@ -71,14 +71,14 @@ impl Parser for NtpParser {
                 Some(vector) => {
                     match vector.last() {
                         // Check the parent node for the correct transport protocol
-                        Some(&Layer::Udp(_)) => Some(true),
+                        Some(&Layer::Udp(_)) => Some(()),
 
                         // Previous result found, but not correct parent
                         _ => None,
                     }
                 },
                 // Parse also if no result is given, for testability
-                None => Some(true),
+                None => Some(()),
             }) >>
 
             b0: bits!(tuple!(take_bits!(u8, 2),

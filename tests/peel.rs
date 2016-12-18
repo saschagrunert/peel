@@ -128,7 +128,7 @@ fn peel_success_tls_http() {
                    },
                    length: 244,
                }));
-    assert_eq!(result[4], Layer::Http(None));
+    assert_eq!(result[4], Layer::Http(HttpPacket::Any));
 }
 
 #[test]

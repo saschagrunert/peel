@@ -1,8 +1,6 @@
+extern crate nom;
 extern crate peel;
 use peel::prelude::*;
-
-extern crate nom;
-use nom::Needed;
 
 static UDP_HEADER: &'static [u8] = &[0x00, 0x35, 0xc7, 0xde, 0x00, 0x92, 0xad, 0x1b];
 

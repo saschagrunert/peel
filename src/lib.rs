@@ -49,10 +49,9 @@ pub mod arenatree;
 pub mod parser;
 mod logger;
 
-use std::{fmt, iter};
+use std::iter;
 use std::collections::HashMap;
 use log::LogLevelFilter;
-use nom::{generate_colors, prepare_errors, print_codes, print_offsets};
 
 use self::prelude::*;
 use parser::ParserBox;

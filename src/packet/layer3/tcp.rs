@@ -89,14 +89,14 @@ impl Parser for TcpParser {
             expr_opt!(match result {
                 Some(vector) => match vector.last() {
                     // Check the parent node for the correct IP protocol
-                    Some(&Layer::Ipv4(ref p)) if p.protocol == IpProtocol::Tcp => Some(true),
-                    Some(&Layer::Ipv6(ref p)) if p.next_header == IpProtocol::Tcp => Some(true),
+                    Some(&Layer::Ipv4(ref p)) if p.protocol == IpProtocol::Tcp => Some(()),
+                    Some(&Layer::Ipv6(ref p)) if p.next_header == IpProtocol::Tcp => Some(()),
 
                     // Previous result found, but not correct parent
                     _ => None,
                 },
                 // Parse also if no result is given, for testability
-                None => Some(true),
+                None => Some(()),
             }) >>
 
             // Parse the header

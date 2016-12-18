@@ -78,13 +78,13 @@ impl Parser for TlsParser {
             expr_opt!(match result {
                 Some(vector) => match vector.last() {
                     // Check the parent node for the correct transport protocol
-                    Some(&Layer::Tcp(_)) => Some(true),
+                    Some(&Layer::Tcp(_)) => Some(()),
 
                     // Previous result found, but not correct parent
                     _ => None,
                 },
                 // Parse also if no result is given, for testability
-                None => Some(true),
+                None => Some(()),
             }) >>
 
             content_type: map_opt!(be_u8, TlsRecordContentType::from_u8) >>

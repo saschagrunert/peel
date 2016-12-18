@@ -5,12 +5,13 @@ pub mod layer3;
 pub mod layer4;
 
 use prelude::*;
-use std::{fmt, str};
 
 /// Provides sensible imports for packet parsers
 pub mod prelude {
+    pub use std::fmt;
+    pub use std::str::{FromStr, self};
     pub use std::net::{Ipv4Addr, Ipv6Addr};
-    pub use nom::{be_u8, be_i8, be_u16, be_u32, be_u64, IResult};
+    pub use nom::*;
 
     pub use super::{Layer, ParserVariant, default_peel};
 
@@ -99,7 +100,7 @@ pub enum Layer {
     Tls(TlsPacket),
 
     /// Hypertext Transfer Protocol packet variant
-    Http(Option<HttpPacket>),
+    Http(HttpPacket),
 
     /// User Datagram Protocol packet variant
     Udp(UdpPacket),

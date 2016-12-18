@@ -91,16 +91,16 @@ impl Parser for Ipv4Parser {
             expr_opt!(match result {
                 Some(vector) => match vector.last() {
                     // Check the parent node for the correct EtherType
-                    Some(&Layer::Ethernet(ref e)) if e.ethertype == EtherType::Ipv4 => Some(true),
+                    Some(&Layer::Ethernet(ref e)) if e.ethertype == EtherType::Ipv4 => Some(()),
 
                     // IPv4 in IPv4 encapsulation
-                    Some(&Layer::Ipv4(ref e)) if e.protocol == IpProtocol::IpIp => Some(true),
+                    Some(&Layer::Ipv4(ref e)) if e.protocol == IpProtocol::IpIp => Some(()),
 
                     // Previous result found, but not correct parent
                     _ => None,
                 },
                 // Parse also if no result is given, for testability
-                None => Some(true),
+                None => Some(()),
             }) >>
 
             // Parse the actual packet
