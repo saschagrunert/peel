@@ -23,8 +23,11 @@ pub struct Ipv4Packet {
     /// Identification for the packet reassembly
     pub id: u16,
 
-    /// IP header flags for fragmentation reassembly and the current fragmentation offset
-    pub flags_and_fragment_offset: u16,
+    /// IP header flags for fragmentation reassembly
+    pub flags: u8,
+
+    /// Current fragmentation offset
+    pub fragment_offset: u16,
 
     /// Time to live of the packet
     pub ttl: u8,
@@ -45,11 +48,17 @@ pub struct Ipv4Packet {
 #[derive(Clone, Copy, Debug, Hash, Eq, PartialEq)]
 /// Current supported IPv4 protocols
 pub enum IpProtocol {
+    /// IP encapsulation within IP
+    IpIp,
+
     /// Transmission Control Protocol
     Tcp,
 
     /// User Datagram Protocol
     Udp,
+
+    /// IPv6 Encapsulation
+    Ipv6,
 }
 
 impl IpProtocol {
@@ -57,8 +66,10 @@ impl IpProtocol {
     /// invalid.
     pub fn from_u8(input: u8) -> Option<IpProtocol> {
         match input {
+            4 => Some(IpProtocol::IpIp),
             6 => Some(IpProtocol::Tcp),
             17 => Some(IpProtocol::Udp),
+            41 => Some(IpProtocol::Ipv6),
             _ => None,
         }
     }
@@ -82,6 +93,9 @@ impl Parser for Ipv4Parser {
                     // Check the parent node for the correct EtherType
                     Some(&Layer::Ethernet(ref e)) if e.ethertype == EtherType::Ipv4 => Some(true),
 
+                    // IPv4 in IPv4 encapsulation
+                    Some(&Layer::Ipv4(ref e)) if e.protocol == IpProtocol::IpIp => Some(true),
+
                     // Previous result found, but not correct parent
                     _ => None,
                 },
@@ -89,31 +103,47 @@ impl Parser for Ipv4Parser {
                 None => Some(true),
             }) >>
 
+            // Parse the actual packet
             ver_ihl: bits!(pair!(tag_bits!(u8, 4, 4),
                                  take_bits!(u8, 4))) >>
             tos: be_u8 >>
             length: be_u16 >>
             id: be_u16 >>
-            flags_and_fragment_offset: be_u16 >>
+            flags_and_fragment_offset: bits!(pair!(take_bits!(u8, 3),
+                                                   take_bits!(u16, 13))) >>
             ttl: be_u8 >>
             protocol: map_opt!(be_u8, IpProtocol::from_u8) >>
             checksum: be_u16 >>
             src: map!(be_u32, Ipv4Addr::from) >>
             dst: map!(be_u32, Ipv4Addr::from) >>
 
+            // Adapt the control flow in case we have an `IPv6` as protocol number
+            state: expr_opt!(match protocol {
+                // This only works if the Ipv6Parser is located as a sibling of the Ipv4Parser
+                IpProtocol::Ipv6 => Some(ParserState::ContinueWithNextSibling),
+
+                // IP encapsulation within IP
+                IpProtocol::IpIp => Some(ParserState::ContinueWithCurrent),
+
+                // Just use the usual control flow
+                _ => Some(ParserState::ContinueWithFirstChild),
+            }) >>
+
+            // Return the parsing result
             ((Layer::Ipv4(Ipv4Packet {
                 version: ver_ihl.0,
                 ihl: ver_ihl.1 << 2,
                 tos: tos,
                 length: length,
                 id: id,
-                flags_and_fragment_offset: flags_and_fragment_offset,
+                flags: flags_and_fragment_offset.0,
+                fragment_offset: flags_and_fragment_offset.1,
                 ttl: ttl,
                 protocol: protocol,
                 checksum: checksum,
                 src: src,
                 dst: dst,
-            })), ParserState::ContinueWithFirstChild)
+            })), state)
         )
     }
 

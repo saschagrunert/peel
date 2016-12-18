@@ -112,7 +112,7 @@ impl Parser for NtpParser {
                 ts_recv: tsv,
                 ts_xmit: tsx,
                 auth: auth,
-            })), ParserState::ContinueWithFirstChild)
+            })), ParserState::Stop)
         )
     }
 

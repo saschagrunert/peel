@@ -37,6 +37,12 @@ pub enum ParserState {
     /// Default behavior, continue traversing the Parser tree with the next child
     ContinueWithFirstChild,
 
+    /// Continue traversing with the next sibling of the current parser
+    ContinueWithNextSibling,
+
+    /// Continue traversing with the current parser
+    ContinueWithCurrent,
+
     /// Immediately stop the parsing
     Stop,
 }

@@ -1,5 +1,5 @@
 //! Arena based tree data structure
-use std::mem;
+use std::{mem, fmt};
 use std::ops::{Index, IndexMut};
 
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
@@ -23,6 +23,15 @@ pub struct Node<T> {
     pub data: T,
 }
 
+impl<T> fmt::Display for Node<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Parent: {:?}, ", self.parent)?;
+        write!(f, "Previous sibling: {:?}, ", self.previous_sibling)?;
+        write!(f, "Next sibling: {:?}, ", self.next_sibling)?;
+        write!(f, "First child: {:?}, ", self.first_child)?;
+        write!(f, "Last child: {:?}", self.last_child)
+    }
+}
 
 #[derive(Clone, Debug)]
 /// An `Arena` structure containing certain Nodes
@@ -105,7 +114,7 @@ impl<T> Node<T> {
 
     /// Return the ID of the previous sibling of this node, unless it is a first child.
     pub fn next_sibling(&self) -> Option<NodeId> {
-        self.previous_sibling
+        self.next_sibling
     }
 }
 

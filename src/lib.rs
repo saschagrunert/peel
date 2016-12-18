@@ -174,9 +174,14 @@ impl<R, V> Peel<R, V> {
     pub fn link_new_parser<T>(&mut self, left: NodeId, parser: T) -> NodeId
         where T: Parser<Result = R, Variant = V> + Send + Sync + 'static
     {
-        let new = self.new_parser(parser);
-        left.append(new, &mut self.arena);
-        new
+        // Create a new node
+        let new_parser = self.new_parser(parser);
+
+        // Append the node to the given node
+        left.append(new_parser, &mut self.arena);
+
+        // Return the parser
+        new_parser
     }
 
     /// Convenient function for recursive traversal with the root as starting point
@@ -212,6 +217,7 @@ impl<R, V> Peel<R, V> {
     /// ```
     pub fn traverse_recursive(&self, start_node: NodeId, input: &[u8], mut result: Vec<R>)
         -> PeelResult<Vec<R>> where V: fmt::Display {
+
         for node_id in start_node.following_siblings(&self.arena) {
             // Get the initial values from the arena
             let ref node = self.arena[node_id];
@@ -226,21 +232,35 @@ impl<R, V> Peel<R, V> {
                     result.push(parser_result);
 
                     // Check the parser state
-                    match state {
+                    let next_node = match state {
+                        // Continue with the first child parser
                          ParserState::ContinueWithFirstChild => {
-                            // Check for further child nodes
-                            match node.first_child() {
-                                Some(node) => {
-                                    debug!("Continue traversal to first child of the parser.");
-                                    result = self.traverse_recursive(node, input_left, result)?;
-                                }
-                                None => debug!("No child nodes left any more, parsing done."),
-                            }
-                         }
-                         ParserState::Stop => {}
+                            debug!("Continue traversal to first child of the parser");
+                            node.first_child()
+                         },
+
+                         // Try the next sibling before parsing deeper
+                         ParserState::ContinueWithNextSibling => {
+                            debug!("Continue traversal to next sibling of the parser");
+                            node.next_sibling()
+                         },
+
+                         // Try the next sibling before parsing deeper
+                         ParserState::ContinueWithCurrent => {
+                            debug!("Trying the current parser again");
+                            Some(node_id)
+                         },
+
+                         // Immediately stop the parser here
+                         ParserState::Stop => None,
+                    };
+
+                    // Continue traversal if needed
+                    if let Some(node) = next_node {
+                        result = self.traverse_recursive(node, input_left, result)?;
                     }
 
-                    // Do not test any other parsers since we already succeed
+                    // Stop here since we already succeed
                     break;
                 }
                 IResult::Error(err) => if log_enabled!(log::LogLevel::Trace) {
@@ -271,7 +291,8 @@ impl<R, V> Peel<R, V> {
         for child in node.children(&self.arena) {
             let indent = iter::repeat(' ').take(level).collect::<String>();
             let ref parser = self.arena[child].data;
-            writeln!(f, "{}- {}", indent, parser.variant())?;
+            write!(f, "{}- {}: {:?}", indent, parser.variant(), child)?;
+            writeln!(f, " ({})", self.arena[child])?;
             self.display_children(f, child, level)?;
         }
         Ok(())
@@ -320,7 +341,8 @@ impl<K, V> fmt::Display for Peel<K, V> where V: fmt::Display {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.root {
             Some(node) => {
-                writeln!(f, "- {}", self.arena[node].data.variant())?;
+                write!(f, "- {}: {:?}", self.arena[node].data.variant(), node)?;
+                writeln!(f, " ({})", self.arena[node])?;
                 self.display_children(f, node, 0)
             }
             None => write!(f, "(no tree root available)"),
