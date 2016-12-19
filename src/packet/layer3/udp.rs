@@ -67,12 +67,12 @@ impl Parser for UdpParser {
             len: be_u16 >>
             checksum: be_u16 >>
 
-            ((Layer::Udp(UdpPacket {
+            (Layer::Udp(UdpPacket {
                 source_port: src,
                 dest_port: dst,
                 length: len,
                 checksum: checksum,
-            })), ParserState::ContinueWithFirstChild)
+            }), ParserState::ContinueWithFirstChild)
         )
     }
 

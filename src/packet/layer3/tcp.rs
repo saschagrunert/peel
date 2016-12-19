@@ -113,7 +113,7 @@ impl Parser for TcpParser {
             options_check: expr_opt!((data_offset_res_flags.0 * 4).checked_sub(20)) >>
             options: take!(options_check) >>
 
-            ((Layer::Tcp(TcpPacket {
+            (Layer::Tcp(TcpPacket {
                 source_port: src,
                 dest_port: dst,
                 sequence_no: seq,
@@ -130,7 +130,7 @@ impl Parser for TcpParser {
                 checksum: checksum,
                 urgent_pointer: urgent_ptr,
                 options: options.to_vec()
-            })), ParserState::ContinueWithFirstChild)
+            }), ParserState::ContinueWithFirstChild)
         )
     }
 

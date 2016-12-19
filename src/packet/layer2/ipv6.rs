@@ -95,7 +95,7 @@ impl Parser for Ipv6Parser {
                 _ => Some(ParserState::ContinueWithFirstChild),
             }) >>
 
-            ((Layer::Ipv6(Ipv6Packet {
+            (Layer::Ipv6(Ipv6Packet {
                 version: ver_tc_fl.0,
                 traffic_class: ver_tc_fl.1,
                 flow_label: ver_tc_fl.2,
@@ -106,7 +106,7 @@ impl Parser for Ipv6Parser {
                                    src.4, src.5, src.6, src.7),
                 dst: Ipv6Addr::new(dst.0, dst.1, dst.2, dst.3,
                                    dst.4, dst.5, dst.6, dst.7),
-            })), state)
+            }), state)
         )
     }
 

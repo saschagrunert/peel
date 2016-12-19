@@ -130,7 +130,7 @@ impl Parser for Ipv4Parser {
             }) >>
 
             // Return the parsing result
-            ((Layer::Ipv4(Ipv4Packet {
+            (Layer::Ipv4(Ipv4Packet {
                 version: ver_ihl.0,
                 ihl: ver_ihl.1 << 2,
                 tos: tos,
@@ -143,7 +143,7 @@ impl Parser for Ipv4Parser {
                 checksum: checksum,
                 src: src,
                 dst: dst,
-            })), state)
+            }), state)
         )
     }
 

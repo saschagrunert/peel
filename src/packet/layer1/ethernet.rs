@@ -59,11 +59,11 @@ impl Parser for EthernetParser {
             s: take!(6) >>
             e: map_opt!(be_u16, EtherType::from_u16) >>
 
-            ((Layer::Ethernet(EthernetPacket {
+            (Layer::Ethernet(EthernetPacket {
                 dst: MacAddress(d[0], d[1], d[2], d[3], d[4], d[5]),
                 src: MacAddress(s[0], s[1], s[2], s[3], s[4], s[5]),
                 ethertype: e,
-            })), ParserState::ContinueWithFirstChild)
+            }), ParserState::ContinueWithFirstChild)
         )
     }
 

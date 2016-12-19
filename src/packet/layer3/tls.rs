@@ -91,14 +91,14 @@ impl Parser for TlsParser {
             version: take!(2) >>
             length: be_u16 >>
 
-            ((Layer::Tls(TlsPacket {
+            (Layer::Tls(TlsPacket {
                 content_type: content_type,
                 version: TlsRecordVersion {
                     major: version[0],
                     minor: version[1],
                 },
                 length: length,
-            })), ParserState::ContinueWithFirstChild)
+            }), ParserState::ContinueWithFirstChild)
         )
     }
 

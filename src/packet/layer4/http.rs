@@ -247,7 +247,7 @@ impl Parser for HttpParser {
                 apply!(HttpPacket::parse_encrypted, result)
             ) >>
 
-            ((result, ParserState::ContinueWithFirstChild))
+            (result, ParserState::ContinueWithFirstChild)
         )
     }
 
