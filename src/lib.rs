@@ -194,6 +194,9 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
     /// let result = peel.traverse(&eth_header, vec![]).unwrap();
     /// assert_eq!(result.len(), 1);
     /// ```
+    ///
+    /// # Errors
+    /// When no tree root was found or the first parser already fails.
     pub fn traverse(&self, input: &[u8], result: Vec<R>) -> PeelResult<Vec<R>> {
         match self.root {
             Some(node) => self.traverse_recursive(node, input, result),
@@ -214,6 +217,9 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
     /// let result = peel.traverse_recursive(peel.root.unwrap(), &eth_header, vec![]).unwrap();
     /// assert_eq!(result.len(), 1);
     /// ```
+    ///
+    /// # Errors
+    /// When the first parser already fails.
     pub fn traverse_recursive(&self, start_node: NodeId, input: &[u8], mut result: Vec<R>)
         -> PeelResult<Vec<R>> {
 
