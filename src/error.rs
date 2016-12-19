@@ -46,8 +46,11 @@ pub enum ErrorType {
     /// Internal errors which should not happen at all
     Internal,
 
-    /// You have to add nodes to the Tree before traversing it
+    /// New nodes have to be added before traversing
     NoTreeRoot,
+
+    /// The root parser failed already
+    RootParserFailed,
 
     /// Errors not directly from the library (like OS errors)
     Other,

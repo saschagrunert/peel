@@ -279,3 +279,11 @@ fn peel_success_error() {
     println!("{:?}", error);
     println!("{}", error.description());
 }
+
+#[test]
+fn peel_failure_first_parser() {
+    let mut peel = default_peel();
+    peel.set_log_level(LogLevelFilter::Trace);
+    let result = peel.traverse(&[], vec![]);
+    assert!(result.is_err());
+}

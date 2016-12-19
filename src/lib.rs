@@ -79,7 +79,7 @@ pub struct Peel<R, V> {
     pub root: Option<NodeId>,
 }
 
-impl<R, V> Peel<R, V> {
+impl<R, V> Peel<R, V> where V: fmt::Display {
     /// Create a new emtpy `Peel` instance
     ///
     /// # Examples
@@ -194,7 +194,7 @@ impl<R, V> Peel<R, V> {
     /// let result = peel.traverse(&eth_header, vec![]).unwrap();
     /// assert_eq!(result.len(), 1);
     /// ```
-    pub fn traverse(&self, input: &[u8], result: Vec<R>) -> PeelResult<Vec<R>> where V: fmt::Display {
+    pub fn traverse(&self, input: &[u8], result: Vec<R>) -> PeelResult<Vec<R>> {
         match self.root {
             Some(node) => self.traverse_recursive(node, input, result),
             None => bail!(ErrorType::NoTreeRoot, "No tree root found"),
@@ -215,7 +215,7 @@ impl<R, V> Peel<R, V> {
     /// assert_eq!(result.len(), 1);
     /// ```
     pub fn traverse_recursive(&self, start_node: NodeId, input: &[u8], mut result: Vec<R>)
-        -> PeelResult<Vec<R>> where V: fmt::Display {
+        -> PeelResult<Vec<R>> {
 
         for node_id in start_node.following_siblings(&self.arena) {
             // Get the initial values from the arena
@@ -262,14 +262,13 @@ impl<R, V> Peel<R, V> {
                     // Stop here since we already succeed
                     break;
                 }
-                IResult::Error(err) => if log_enabled!(log::LogLevel::Trace) {
+                error @ _ => if log_enabled!(log::LogLevel::Trace) {
+                    if Some(start_node) == self.root {
+                        bail!(ErrorType::RootParserFailed, "No parser succeed at all");
+                    }
                     debug!("Failed parser: {}", parser.variant());
-                    self.display_error(input, IResult::Error(err));
+                    self.display_error(input, error);
                 },
-                IResult::Incomplete(err) => if log_enabled!(log::LogLevel::Trace) {
-                    debug!("Incomplete parser: {}", parser.variant());
-                    self.display_error(input, IResult::Incomplete(err));
-                }
             }
         }
         Ok(result)
@@ -285,7 +284,7 @@ impl<R, V> Peel<R, V> {
     /// println!("{}", peel);
     /// ```
     fn display_children(&self, f: &mut fmt::Formatter, node: NodeId, mut level: usize)
-        -> fmt::Result where V: fmt::Display {
+        -> fmt::Result {
         level += 2;
         for child in node.children(&self.arena) {
             let indent = iter::repeat(' ').take(level).collect::<String>();
