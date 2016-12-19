@@ -72,9 +72,6 @@ pub struct Peel<R, V> {
     /// The memory arena of the tree
     pub arena: Arena<ParserBox<R, V>>,
 
-    /// The current result stack of the parsers
-    pub result: Vec<R>,
-
     /// The first node added will be the root
     pub root: Option<NodeId>,
 }
@@ -90,7 +87,6 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
     pub fn new() -> Self {
         Peel {
             arena: Arena::new(),
-            result: vec![],
             root: None,
         }
     }
