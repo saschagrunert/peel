@@ -58,15 +58,14 @@ fn parse_http_request_success_post() {
 #[test]
 fn parse_http_request_success_methods() {
     let parser = HttpParser;
-    parser.parse(b"GET / HTTP/1.1", None, None, None).unwrap();
-    parser.parse(b"POST / HTTP/1.1", None, None, None).unwrap();
-    parser.parse(b"HEAD / HTTP/1.1", None, None, None).unwrap();
-    parser.parse(b"PUT / HTTP/1.1", None, None, None).unwrap();
-    parser.parse(b"DELETE / HTTP/1.1", None, None, None).unwrap();
-    parser.parse(b"TRACE / HTTP/1.1", None, None, None).unwrap();
-    parser.parse(b"OPTIONS / HTTP/1.1", None, None, None).unwrap();
-    parser.parse(b"CONNECT / HTTP/1.1", None, None, None).unwrap();
-    parser.parse(b"PATCH / HTTP/1.1", None, None, None).unwrap();
+    let header = " / HTTP/1.1\r\nHost: abc.com\r\n\r\n";
+    let methods = ["GET", "POST", "HEAD", "PUT", "DELETE", "TRACE", "OPTIONS", "CONNECT", "PATCH"];
+
+    for method in &methods {
+        let mut input = Vec::from(method.clone());
+        input.extend_from_slice(header.as_bytes());
+        parser.parse(&input, None, None, None).unwrap();
+    }
 }
 
 #[test]
@@ -131,7 +130,10 @@ fn parse_http_response_success_moved() {
 #[test]
 fn parse_http_response_success_ok() {
     let parser = HttpParser;
-    let res = parser.parse(b"HTTP/1.0 200 OK\r\n\r\n", None, None, None)
+    let res = parser.parse(b"HTTP/1.0 200 OK\r\nHost: abc.com\r\n\r\n",
+               None,
+               None,
+               None)
         .unwrap()
         .1;
     assert_eq!(res.0,
@@ -142,7 +144,10 @@ fn parse_http_response_success_ok() {
                    },
                    code: 200,
                    reason: "OK".to_owned(),
-                   headers: vec![],
+                   headers: vec![HttpHeader {
+                                     key: "Host".to_owned(),
+                                     value: "abc.com".to_owned(),
+                                 }],
                })));
 }
 

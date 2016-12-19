@@ -143,10 +143,14 @@ impl HttpHeader {
     }
 
     named!(parse<&[u8], Vec<HttpHeader> >,
-        ws!(many0!(map!(separated_pair!(
-            map_res!(take_until!(":"), str::from_utf8),
-            tag_fast!(": "),
-            map_res!(take_until!("\r"), str::from_utf8)), HttpHeader::from_tuple)))
+        do_parse!(
+            result: many_till!(map!(separated_pair!(
+                map_res!(ws!(take_until!(":")), str::from_utf8),
+                tag_fast!(": "),
+                map_res!(take_until!("\r"), str::from_utf8)), HttpHeader::from_tuple),
+                tag_fast!("\r\n\r\n")) >>
+            (result.0)
+        )
     );
 }
 
