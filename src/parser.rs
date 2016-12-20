@@ -1,6 +1,6 @@
 //! General parser descriptions and traits
 use nom::IResult;
-use arenatree::{Node, Arena};
+use indextree::{Node, Arena};
 
 /// The type which will be stored within the tree structure
 pub type ParserBox<R, V> = Box<Parser<Result = R, Variant = V> + Send + Sync>;

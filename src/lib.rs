@@ -36,6 +36,7 @@ extern crate lazy_static;
 #[macro_use]
 extern crate log;
 
+extern crate indextree;
 extern crate regex;
 extern crate term;
 
@@ -45,13 +46,13 @@ pub mod error;
 #[macro_use]
 pub mod memcmp;
 pub mod packet;
-pub mod arenatree;
 pub mod parser;
 mod logger;
 
 use std::iter;
 use std::collections::HashMap;
 use log::LogLevelFilter;
+use indextree::{Arena, NodeId};
 
 use self::prelude::*;
 use parser::ParserBox;
@@ -61,7 +62,6 @@ use logger::Logger;
 pub mod prelude {
     pub use super::Peel;
     pub use error::{PeelResult, PeelError, ErrorType};
-    pub use arenatree::{Arena, NodeId, Node};
     pub use parser::{Parser, ParserNode, ParserArena, ParserState};
 
     pub use packet::prelude::*;
