@@ -10,7 +10,7 @@
 //! use peel::prelude::*;
 //!
 //! // Get the default tree based on the TCP/IP stack
-//! let peel = default_peel();
+//! let peel = peel_tcp_ip();
 //!
 //! let eth_header = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 8, 0];
 //!
@@ -101,7 +101,7 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
     /// use log::LogLevelFilter;
     /// use peel::prelude::*;
     ///
-    /// let mut peel = default_peel();
+    /// let mut peel = peel_tcp_ip();
     /// peel.set_log_level(LogLevelFilter::Trace);
     /// # }
     /// ```
@@ -185,7 +185,7 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
     /// ```
     /// use peel::prelude::*;
     ///
-    /// let peel = default_peel();
+    /// let peel = peel_tcp_ip();
     /// let eth_header = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 8, 0];
     /// let result = peel.traverse(&eth_header, vec![]).unwrap();
     /// assert_eq!(result.len(), 1);
@@ -208,7 +208,7 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
     /// ```
     /// use peel::prelude::*;
     ///
-    /// let peel = default_peel();
+    /// let peel = peel_tcp_ip();
     /// let eth_header = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 8, 0];
     /// let result = peel.traverse_recursive(peel.root.unwrap(), &eth_header, vec![]).unwrap();
     /// assert_eq!(result.len(), 1);
@@ -282,7 +282,7 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
     /// ```
     /// use peel::prelude::*;
     ///
-    /// let peel = default_peel();
+    /// let peel = peel_tcp_ip();
     /// println!("{}", peel);
     /// ```
     fn display_children(&self, f: &mut fmt::Formatter, node: NodeId, mut level: usize)
@@ -304,7 +304,7 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
     /// ```
     /// use peel::prelude::*;
     ///
-    /// let peel = default_peel();
+    /// let peel = peel_tcp_ip();
     /// let eth_header = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 0, 0];
     ///
     /// let parser = EthernetParser;

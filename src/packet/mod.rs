@@ -13,7 +13,7 @@ pub mod prelude {
     pub use std::net::{Ipv4Addr, Ipv6Addr};
     pub use nom::*;
 
-    pub use super::{Layer, ParserVariant, default_peel};
+    pub use super::{Layer, ParserVariant, peel_tcp_ip};
 
     /// A general shorthand for the packet parsing tree
     pub type PacketPeel = ::Peel<Layer, ParserVariant>;
@@ -125,7 +125,7 @@ impl fmt::Display for Layer {
 }
 
 /// Returns the default `Peel` structure for all available parser variants
-pub fn default_peel() -> PacketPeel {
+pub fn peel_tcp_ip() -> PacketPeel {
     // Create a tree
     let mut p = Peel::new();
 

@@ -64,7 +64,7 @@ static PACKET_ETH_IPV4_IPV4: &'static [u8] =
 
 #[test]
 fn peel_success_tcp() {
-    let mut peel = default_peel();
+    let mut peel = peel_tcp_ip();
     println!("{}", peel);
     peel.set_log_level(LogLevelFilter::Trace);
     let result = peel.traverse(PACKET_ETH_IPV4_TCP, vec![]).unwrap();
@@ -113,7 +113,7 @@ fn peel_success_tcp() {
 
 #[test]
 fn peel_success_tls_http() {
-    let mut peel = default_peel();
+    let mut peel = peel_tcp_ip();
     peel.set_log_level(LogLevelFilter::Trace);
     let mut packet = Vec::from(PACKET_ETH_IPV4_TCP);
     packet.extend_from_slice(TLS_HEADER);
@@ -133,7 +133,7 @@ fn peel_success_tls_http() {
 
 #[test]
 fn peel_success_udp() {
-    let mut peel = default_peel();
+    let mut peel = peel_tcp_ip();
     peel.set_log_level(LogLevelFilter::Trace);
     let result = peel.traverse(PACKET_ETH_IPV6_UDP, vec![]).unwrap();
     assert_eq!(result.len(), 3);
@@ -165,7 +165,7 @@ fn peel_success_udp() {
 
 #[test]
 fn peel_success_ntp() {
-    let mut peel = default_peel();
+    let mut peel = peel_tcp_ip();
     peel.set_log_level(LogLevelFilter::Trace);
     let mut packet = Vec::from(PACKET_ETH_IPV6_UDP);
     packet.extend_from_slice(NTP_HEADER);
@@ -192,7 +192,7 @@ fn peel_success_ntp() {
 
 #[test]
 fn peel_success_ipv6_in_ipv4() {
-    let mut peel = default_peel();
+    let mut peel = peel_tcp_ip();
     peel.set_log_level(LogLevelFilter::Trace);
     let result = peel.traverse(PACKET_ETH_IPV4_IPV6, vec![]).unwrap();
     assert_eq!(result.len(), 3);
@@ -226,7 +226,7 @@ fn peel_success_ipv6_in_ipv4() {
 
 #[test]
 fn peel_success_ipv6_in_ipv6() {
-    let mut peel = default_peel();
+    let mut peel = peel_tcp_ip();
     peel.set_log_level(LogLevelFilter::Trace);
     let result = peel.traverse(PACKET_ETH_IPV6_IPV6, vec![]).unwrap();
     assert_eq!(result.len(), 3);
@@ -234,7 +234,7 @@ fn peel_success_ipv6_in_ipv6() {
 
 #[test]
 fn peel_success_ipv4_in_ipv4() {
-    let mut peel = default_peel();
+    let mut peel = peel_tcp_ip();
     peel.set_log_level(LogLevelFilter::Trace);
     let result = peel.traverse(PACKET_ETH_IPV4_IPV4, vec![]).unwrap();
     assert_eq!(result.len(), 3);
@@ -253,7 +253,7 @@ fn peel_failure_no_root() {
 
 #[test]
 fn peel_success_eth() {
-    let mut peel = default_peel();
+    let mut peel = peel_tcp_ip();
     peel.set_log_level(LogLevelFilter::Trace);
     let mut input = vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00];
     input.extend_from_slice(&[0xff; 500]);
@@ -263,7 +263,7 @@ fn peel_success_eth() {
 
 #[test]
 fn peel_success_log() {
-    let mut peel = default_peel();
+    let mut peel = peel_tcp_ip();
     peel.set_log_level(LogLevelFilter::Trace);
     error!("Error");
     warn!("Warn");
@@ -282,7 +282,7 @@ fn peel_success_error() {
 
 #[test]
 fn peel_failure_first_parser() {
-    let mut peel = default_peel();
+    let mut peel = peel_tcp_ip();
     peel.set_log_level(LogLevelFilter::Trace);
     let result = peel.traverse(&[], vec![]);
     assert!(result.is_err());
