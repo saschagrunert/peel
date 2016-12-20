@@ -9,7 +9,7 @@ which can be modified during runtime. Other stacks beside the well known TCP/IP 
 use peel::prelude::*;
 
 // Get the default tree based on the TCP/IP stack
-let peel = default_peel();
+let peel = peel_tcp_ip();
 
 let eth_header = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 8, 0];
 

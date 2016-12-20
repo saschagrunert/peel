@@ -11,6 +11,22 @@ pub type ParserArena<R, V> = Arena<ParserBox<R, V>>;
 /// A node within a `ParserArena`
 pub type ParserNode<R, V> = Node<ParserBox<R, V>>;
 
+#[derive(Debug, Eq, PartialEq)]
+/// Possible actions to be done if a parser succeed
+pub enum ParserState {
+    /// Default behavior, continue traversing the Parser tree with the next child
+    ContinueWithFirstChild,
+
+    /// Continue traversing with the next sibling of the current parser
+    ContinueWithNextSibling,
+
+    /// Continue traversing with the current parser
+    ContinueWithCurrent,
+
+    /// Immediately stop the parsing
+    Stop,
+}
+
 /// The parsing trait
 pub trait Parser {
     /// The type for result reporting, usually an enum
@@ -29,20 +45,4 @@ pub trait Parser {
 
     /// Return the actual enum variant of the parser
     fn variant(&self) -> Self::Variant;
-}
-
-#[derive(Debug, Eq, PartialEq)]
-/// Possible actions to be done if a parser succeed
-pub enum ParserState {
-    /// Default behavior, continue traversing the Parser tree with the next child
-    ContinueWithFirstChild,
-
-    /// Continue traversing with the next sibling of the current parser
-    ContinueWithNextSibling,
-
-    /// Continue traversing with the current parser
-    ContinueWithCurrent,
-
-    /// Immediately stop the parsing
-    Stop,
 }
