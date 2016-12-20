@@ -5,6 +5,72 @@ use prelude::*;
 /// The TCP parser
 pub struct TcpParser;
 
+impl Parser for TcpParser {
+    type Result = Layer;
+    type Variant = ParserVariant;
+
+    /// Parse a `TcpPacket` from an `&[u8]`
+    fn parse<'a>(&self,
+                 input: &'a [u8],
+                 _: Option<&ParserNode<Layer, ParserVariant>>,
+                 _: Option<&ParserArena<Layer, ParserVariant>>,
+                 result: Option<&Vec<Layer>>)
+                 -> IResult<&'a [u8], (Layer, ParserState)> {
+        do_parse!(input,
+            // Check the IP protocol from the parent parser (IPv4 or IPv6)
+            expr_opt!(match result {
+                Some(vector) => match vector.last() {
+                    // Check the parent node for the correct IP protocol
+                    Some(&Layer::Ipv4(ref p)) if p.protocol == IpProtocol::Tcp => Some(()),
+                    Some(&Layer::Ipv6(ref p)) if p.next_header == IpProtocol::Tcp => Some(()),
+
+                    // Previous result found, but not correct parent
+                    _ => None,
+                },
+                // Parse also if no result is given, for testability
+                None => Some(()),
+            }) >>
+
+            // Parse the header
+            src: be_u16 >>
+            dst: be_u16 >>
+            seq: be_u32 >>
+            ack: be_u32 >>
+            data_offset_res_flags : bits!(tuple!(take_bits!(u8, 4),
+                                                 take_bits!(u8, 6),
+                                                 take_bits!(u8, 6))) >>
+            window : be_u16 >>
+            checksum : be_u16 >>
+            urgent_ptr : be_u16 >>
+            options_check: expr_opt!((data_offset_res_flags.0 * 4).checked_sub(20)) >>
+            options: take!(options_check) >>
+
+            (Layer::Tcp(TcpPacket {
+                source_port: src,
+                dest_port: dst,
+                sequence_no: seq,
+                ack_no: ack,
+                data_offset: data_offset_res_flags.0 * 4,
+                reserved: data_offset_res_flags.1,
+                flag_urg: data_offset_res_flags.2 & 0b100000 == 0b100000,
+                flag_ack: data_offset_res_flags.2 & 0b010000 == 0b010000,
+                flag_psh: data_offset_res_flags.2 & 0b001000 == 0b001000,
+                flag_rst: data_offset_res_flags.2 & 0b000100 == 0b000100,
+                flag_syn: data_offset_res_flags.2 & 0b000010 == 0b000010,
+                flag_fin: data_offset_res_flags.2 & 0b000001 == 0b000001,
+                window: window,
+                checksum: checksum,
+                urgent_pointer: urgent_ptr,
+                options: options.to_vec()
+            }), ParserState::ContinueWithFirstChild)
+        )
+    }
+
+    fn variant(&self) -> ParserVariant {
+        ParserVariant::Tcp(self.clone())
+    }
+}
+
 #[derive(Debug, Eq, PartialEq)]
 /// Representation of a Transmission Control Protocol packet
 pub struct TcpPacket {
@@ -71,70 +137,4 @@ pub struct TcpPacket {
 
     /// The length of this field is determined by the data offset field.
     pub options: Vec<u8>,
-}
-
-impl Parser for TcpParser {
-    type Result = Layer;
-    type Variant = ParserVariant;
-
-    /// Parse a new `Tcp` from an u8 slice
-    fn parse<'a>(&self,
-                 input: &'a [u8],
-                 _: Option<&ParserNode<Layer, ParserVariant>>,
-                 _: Option<&ParserArena<Layer, ParserVariant>>,
-                 result: Option<&Vec<Layer>>)
-                 -> IResult<&'a [u8], (Layer, ParserState)> {
-        do_parse!(input,
-            // Check the IP protocol from the parent parser (IPv4 or IPv6)
-            expr_opt!(match result {
-                Some(vector) => match vector.last() {
-                    // Check the parent node for the correct IP protocol
-                    Some(&Layer::Ipv4(ref p)) if p.protocol == IpProtocol::Tcp => Some(()),
-                    Some(&Layer::Ipv6(ref p)) if p.next_header == IpProtocol::Tcp => Some(()),
-
-                    // Previous result found, but not correct parent
-                    _ => None,
-                },
-                // Parse also if no result is given, for testability
-                None => Some(()),
-            }) >>
-
-            // Parse the header
-            src: be_u16 >>
-            dst: be_u16 >>
-            seq: be_u32 >>
-            ack: be_u32 >>
-            data_offset_res_flags : bits!(tuple!(take_bits!(u8, 4),
-                                                 take_bits!(u8, 6),
-                                                 take_bits!(u8, 6))) >>
-            window : be_u16 >>
-            checksum : be_u16 >>
-            urgent_ptr : be_u16 >>
-            options_check: expr_opt!((data_offset_res_flags.0 * 4).checked_sub(20)) >>
-            options: take!(options_check) >>
-
-            (Layer::Tcp(TcpPacket {
-                source_port: src,
-                dest_port: dst,
-                sequence_no: seq,
-                ack_no: ack,
-                data_offset: data_offset_res_flags.0 * 4,
-                reserved: data_offset_res_flags.1,
-                flag_urg: data_offset_res_flags.2 & 0b100000 == 0b100000,
-                flag_ack: data_offset_res_flags.2 & 0b010000 == 0b010000,
-                flag_psh: data_offset_res_flags.2 & 0b001000 == 0b001000,
-                flag_rst: data_offset_res_flags.2 & 0b000100 == 0b000100,
-                flag_syn: data_offset_res_flags.2 & 0b000010 == 0b000010,
-                flag_fin: data_offset_res_flags.2 & 0b000001 == 0b000001,
-                window: window,
-                checksum: checksum,
-                urgent_pointer: urgent_ptr,
-                options: options.to_vec()
-            }), ParserState::ContinueWithFirstChild)
-        )
-    }
-
-    fn variant(&self) -> ParserVariant {
-        ParserVariant::Tcp(self.clone())
-    }
 }

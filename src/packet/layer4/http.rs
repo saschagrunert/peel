@@ -5,6 +5,43 @@ use prelude::*;
 /// The HTTP parser
 pub struct HttpParser;
 
+impl Parser for HttpParser {
+    type Result = Layer;
+    type Variant = ParserVariant;
+
+    /// Parse a `HttpPacket` from an `&[u8]`
+    fn parse<'a>(&self,
+                 input: &'a [u8],
+                 _: Option<&ParserNode<Layer, ParserVariant>>,
+                 _: Option<&ParserArena<Layer, ParserVariant>>,
+                 result: Option<&Vec<Layer>>)
+                 -> IResult<&'a [u8], (Layer, ParserState)> {
+        do_parse!(input,
+
+            // Check the transport protocol from the parent parser (TCP or TLS)
+            result: alt!(
+                // TCP based plain text transfer
+                cond_reduce!(match result {
+                    Some(vector) => match vector.last() {
+                        Some(&Layer::Tcp(_)) => true,
+                        _ => false, // Previous result found, but not correct parent
+                    },
+                    None => true, // Parse also if no result is given, for testability
+                }, HttpPacket::parse_plain) |
+
+                // TLS based encrypted traffic
+                apply!(HttpPacket::parse_encrypted, result)
+            ) >>
+
+            (result, ParserState::ContinueWithFirstChild)
+        )
+    }
+
+    fn variant(&self) -> ParserVariant {
+        ParserVariant::Http(self.clone())
+    }
+}
+
 #[derive(Debug, Eq, PartialEq)]
 /// Representation of a Hypertext Transfer Protocol packet
 pub enum HttpPacket {
@@ -216,42 +253,5 @@ impl HttpPacket {
                 _ => None,
             }
         )
-    }
-}
-
-impl Parser for HttpParser {
-    type Result = Layer;
-    type Variant = ParserVariant;
-
-    /// Parse an HTTP frame from an u8 slice.
-    fn parse<'a>(&self,
-                 input: &'a [u8],
-                 _: Option<&ParserNode<Layer, ParserVariant>>,
-                 _: Option<&ParserArena<Layer, ParserVariant>>,
-                 result: Option<&Vec<Layer>>)
-                 -> IResult<&'a [u8], (Layer, ParserState)> {
-        do_parse!(input,
-
-            // Check the transport protocol from the parent parser (TCP or TLS)
-            result: alt!(
-                // TCP based plain text transfer
-                cond_reduce!(match result {
-                    Some(vector) => match vector.last() {
-                        Some(&Layer::Tcp(_)) => true,
-                        _ => false, // Previous result found, but not correct parent
-                    },
-                    None => true, // Parse also if no result is given, for testability
-                }, HttpPacket::parse_plain) |
-
-                // TLS based encrypted traffic
-                apply!(HttpPacket::parse_encrypted, result)
-            ) >>
-
-            (result, ParserState::ContinueWithFirstChild)
-        )
-    }
-
-    fn variant(&self) -> ParserVariant {
-        ParserVariant::Http(self.clone())
     }
 }

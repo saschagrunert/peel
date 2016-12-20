@@ -5,6 +5,35 @@ use prelude::*;
 /// The Ethernet parser
 pub struct EthernetParser;
 
+impl Parser for EthernetParser {
+    type Result = Layer;
+    type Variant = ParserVariant;
+
+    /// Parse an `EthernetPacket` from an `&[u8]`
+    fn parse<'a>(&self,
+                 input: &'a [u8],
+                 _: Option<&ParserNode<Layer, ParserVariant>>,
+                 _: Option<&ParserArena<Layer, ParserVariant>>,
+                 _: Option<&Vec<Layer>>)
+                 -> IResult<&'a [u8], (Layer, ParserState)> {
+        do_parse!(input,
+            d: take!(6) >>
+            s: take!(6) >>
+            e: map_opt!(be_u16, EtherType::from_u16) >>
+
+            (Layer::Ethernet(EthernetPacket {
+                dst: MacAddress(d[0], d[1], d[2], d[3], d[4], d[5]),
+                src: MacAddress(s[0], s[1], s[2], s[3], s[4], s[5]),
+                ethertype: e,
+            }), ParserState::ContinueWithFirstChild)
+        )
+    }
+
+    fn variant(&self) -> ParserVariant {
+        ParserVariant::Ethernet(self.clone())
+    }
+}
+
 #[derive(Debug, Eq, PartialEq)]
 /// Representation of the Ethernet structure
 pub struct EthernetPacket {
@@ -41,33 +70,5 @@ impl EtherType {
             0x86DD => Some(EtherType::Ipv6),
             _ => None,
         }
-    }
-}
-
-impl Parser for EthernetParser {
-    type Result = Layer;
-    type Variant = ParserVariant;
-
-    fn parse<'a>(&self,
-                 input: &'a [u8],
-                 _: Option<&ParserNode<Layer, ParserVariant>>,
-                 _: Option<&ParserArena<Layer, ParserVariant>>,
-                 _: Option<&Vec<Layer>>)
-                 -> IResult<&'a [u8], (Layer, ParserState)> {
-        do_parse!(input,
-            d: take!(6) >>
-            s: take!(6) >>
-            e: map_opt!(be_u16, EtherType::from_u16) >>
-
-            (Layer::Ethernet(EthernetPacket {
-                dst: MacAddress(d[0], d[1], d[2], d[3], d[4], d[5]),
-                src: MacAddress(s[0], s[1], s[2], s[3], s[4], s[5]),
-                ethertype: e,
-            }), ParserState::ContinueWithFirstChild)
-        )
-    }
-
-    fn variant(&self) -> ParserVariant {
-        ParserVariant::Ethernet(self.clone())
     }
 }

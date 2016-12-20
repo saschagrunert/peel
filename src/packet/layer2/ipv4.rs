@@ -5,81 +5,11 @@ use prelude::*;
 /// The IPv4 parser
 pub struct Ipv4Parser;
 
-#[derive(Debug, Eq, PartialEq)]
-/// Representation of an Internet Protocol version 4 packet
-pub struct Ipv4Packet {
-    /// Protocol version, should be '4'
-    pub version: u8,
-
-    /// IP header length
-    pub ihl: u8,
-
-    /// Type of Service
-    pub tos: u8,
-
-    /// Total packet length including header
-    pub length: u16,
-
-    /// Identification for the packet reassembly
-    pub id: u16,
-
-    /// IP header flags for fragmentation reassembly
-    pub flags: u8,
-
-    /// Current fragmentation offset
-    pub fragment_offset: u16,
-
-    /// Time to live of the packet
-    pub ttl: u8,
-
-    /// The transport protocol for the IP packet
-    pub protocol: IpProtocol,
-
-    /// Header checksum
-    pub checksum: u16,
-
-    /// Source address
-    pub src: Ipv4Addr,
-
-    /// Destination address
-    pub dst: Ipv4Addr,
-}
-
-#[derive(Clone, Copy, Debug, Hash, Eq, PartialEq)]
-/// Current supported IPv4 protocols
-pub enum IpProtocol {
-    /// IP encapsulation within IP
-    IpIp,
-
-    /// Transmission Control Protocol
-    Tcp,
-
-    /// User Datagram Protocol
-    Udp,
-
-    /// IPv6 Encapsulation
-    Ipv6,
-}
-
-impl IpProtocol {
-    /// Convert a u8 to an `IpProtocol`. Returns None if the type is not supported or generally
-    /// invalid.
-    pub fn from_u8(input: u8) -> Option<IpProtocol> {
-        match input {
-            4 => Some(IpProtocol::IpIp),
-            6 => Some(IpProtocol::Tcp),
-            17 => Some(IpProtocol::Udp),
-            41 => Some(IpProtocol::Ipv6),
-            _ => None,
-        }
-    }
-}
-
 impl Parser for Ipv4Parser {
     type Result = Layer;
     type Variant = ParserVariant;
 
-    /// Parse an IPv4 frame from an u8 slice.
+    /// Parse an `Ipv4Packet` from an `&[u8]`
     fn parse<'a>(&self,
                  input: &'a [u8],
                  _: Option<&ParserNode<Layer, ParserVariant>>,
@@ -149,5 +79,75 @@ impl Parser for Ipv4Parser {
 
     fn variant(&self) -> ParserVariant {
         ParserVariant::Ipv4(self.clone())
+    }
+}
+
+#[derive(Debug, Eq, PartialEq)]
+/// Representation of an Internet Protocol version 4 packet
+pub struct Ipv4Packet {
+    /// Protocol version, should be '4'
+    pub version: u8,
+
+    /// IP header length
+    pub ihl: u8,
+
+    /// Type of Service
+    pub tos: u8,
+
+    /// Total packet length including header
+    pub length: u16,
+
+    /// Identification for the packet reassembly
+    pub id: u16,
+
+    /// IP header flags for fragmentation reassembly
+    pub flags: u8,
+
+    /// Current fragmentation offset
+    pub fragment_offset: u16,
+
+    /// Time to live of the packet
+    pub ttl: u8,
+
+    /// The transport protocol for the IP packet
+    pub protocol: IpProtocol,
+
+    /// Header checksum
+    pub checksum: u16,
+
+    /// Source address
+    pub src: Ipv4Addr,
+
+    /// Destination address
+    pub dst: Ipv4Addr,
+}
+
+#[derive(Clone, Copy, Debug, Hash, Eq, PartialEq)]
+/// Current supported IPv4 protocols
+pub enum IpProtocol {
+    /// IP encapsulation within IP
+    IpIp,
+
+    /// Transmission Control Protocol
+    Tcp,
+
+    /// User Datagram Protocol
+    Udp,
+
+    /// IPv6 Encapsulation
+    Ipv6,
+}
+
+impl IpProtocol {
+    /// Convert a u8 to an `IpProtocol`. Returns None if the type is not supported or generally
+    /// invalid.
+    pub fn from_u8(input: u8) -> Option<IpProtocol> {
+        match input {
+            4 => Some(IpProtocol::IpIp),
+            6 => Some(IpProtocol::Tcp),
+            17 => Some(IpProtocol::Udp),
+            41 => Some(IpProtocol::Ipv6),
+            _ => None,
+        }
     }
 }

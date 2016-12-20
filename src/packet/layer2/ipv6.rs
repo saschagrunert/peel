@@ -5,51 +5,11 @@ use prelude::*;
 /// The IPv6 parser
 pub struct Ipv6Parser;
 
-#[derive(Debug, Eq, PartialEq)]
-/// Representation of an Internet Protocol version 6 packet
-pub struct Ipv6Packet {
-    /// The constant 6 (bit sequence 0110).
-    pub version: u8,
-
-    /// The bits of this field hold two values. The 6 most-significant bits are used for
-    /// differentiated services, which is used to classify packets. The remaining two bits are used
-    /// for ECN; priority values subdivide into ranges: traffic where the source provides
-    /// congestion control and non-congestion control traffic.
-    pub traffic_class: u8,
-
-    /// Originally created for giving real-time applications special service. The flow label when
-    /// set to a non-zero value now serves as a hint to routers and switches with multiple outbound
-    /// paths that these packets should stay on the same path so that they will not be reordered.
-    /// It has further been suggested that the flow label be used to help detect spoofed packets.
-    pub flow_label: u32,
-
-    /// The size of the payload in octets, including any extension headers. The length is set to
-    /// zero when a Hop-by-Hop extension header carries a Jumbo Payload option.
-    pub payload_length: u16,
-
-    /// Specifies the type of the next header. This field usually specifies the transport layer
-    /// protocol used by a packet's payload. When extension headers are present in the packet this
-    /// field indicates which extension header follows. The values are shared with those used for
-    /// the IPv4 protocol field, as both fields have the same function.
-    pub next_header: IpProtocol,
-
-    /// Replaces the time to live field of IPv4. This value is decremented by one at each
-    /// intermediate node visited by the packet. When the counter reaches 0 the packet is
-    /// discarded.
-    pub hop_limit: u8,
-
-    /// Source address
-    pub src: Ipv6Addr,
-
-    /// Destination address
-    pub dst: Ipv6Addr,
-}
-
 impl Parser for Ipv6Parser {
     type Result = Layer;
     type Variant = ParserVariant;
 
-    /// Parse an IPv6 frame from an u8 slice.
+    /// Parse an `Ipv6Packet` from an `&[u8]`
     fn parse<'a>(&self,
                  input: &'a [u8],
                  _: Option<&ParserNode<Layer, ParserVariant>>,
@@ -113,4 +73,44 @@ impl Parser for Ipv6Parser {
     fn variant(&self) -> ParserVariant {
         ParserVariant::Ipv6(self.clone())
     }
+}
+
+#[derive(Debug, Eq, PartialEq)]
+/// Representation of an Internet Protocol version 6 packet
+pub struct Ipv6Packet {
+    /// The constant 6 (bit sequence 0110).
+    pub version: u8,
+
+    /// The bits of this field hold two values. The 6 most-significant bits are used for
+    /// differentiated services, which is used to classify packets. The remaining two bits are used
+    /// for ECN; priority values subdivide into ranges: traffic where the source provides
+    /// congestion control and non-congestion control traffic.
+    pub traffic_class: u8,
+
+    /// Originally created for giving real-time applications special service. The flow label when
+    /// set to a non-zero value now serves as a hint to routers and switches with multiple outbound
+    /// paths that these packets should stay on the same path so that they will not be reordered.
+    /// It has further been suggested that the flow label be used to help detect spoofed packets.
+    pub flow_label: u32,
+
+    /// The size of the payload in octets, including any extension headers. The length is set to
+    /// zero when a Hop-by-Hop extension header carries a Jumbo Payload option.
+    pub payload_length: u16,
+
+    /// Specifies the type of the next header. This field usually specifies the transport layer
+    /// protocol used by a packet's payload. When extension headers are present in the packet this
+    /// field indicates which extension header follows. The values are shared with those used for
+    /// the IPv4 protocol field, as both fields have the same function.
+    pub next_header: IpProtocol,
+
+    /// Replaces the time to live field of IPv4. This value is decremented by one at each
+    /// intermediate node visited by the packet. When the counter reaches 0 the packet is
+    /// discarded.
+    pub hop_limit: u8,
+
+    /// Source address
+    pub src: Ipv6Addr,
+
+    /// Destination address
+    pub dst: Ipv6Addr,
 }

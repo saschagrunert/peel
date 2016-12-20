@@ -5,6 +5,51 @@ use prelude::*;
 /// The TLS parser
 pub struct TlsParser;
 
+impl Parser for TlsParser {
+    type Result = Layer;
+    type Variant = ParserVariant;
+
+    /// Parse a `TlsPacket` from an `&[u8]`
+    fn parse<'a>(&self,
+                 input: &'a [u8],
+                 _: Option<&ParserNode<Layer, ParserVariant>>,
+                 _: Option<&ParserArena<Layer, ParserVariant>>,
+                 result: Option<&Vec<Layer>>)
+                 -> IResult<&'a [u8], (Layer, ParserState)> {
+        do_parse!(input,
+            // Check the transport protocol from the parent parser (TCP)
+            expr_opt!(match result {
+                Some(vector) => match vector.last() {
+                    // Check the parent node for the correct transport protocol
+                    Some(&Layer::Tcp(_)) => Some(()),
+
+                    // Previous result found, but not correct parent
+                    _ => None,
+                },
+                // Parse also if no result is given, for testability
+                None => Some(()),
+            }) >>
+
+            content_type: map_opt!(be_u8, TlsRecordContentType::from_u8) >>
+            version: take!(2) >>
+            length: be_u16 >>
+
+            (Layer::Tls(TlsPacket {
+                content_type: content_type,
+                version: TlsRecordVersion {
+                    major: version[0],
+                    minor: version[1],
+                },
+                length: length,
+            }), ParserState::ContinueWithFirstChild)
+        )
+    }
+
+    fn variant(&self) -> ParserVariant {
+        ParserVariant::Tls(self.clone())
+    }
+}
+
 #[derive(Debug, Eq, PartialEq)]
 /// Representation of a Transport layer security packet
 pub struct TlsPacket {
@@ -60,49 +105,4 @@ pub struct TlsRecordVersion {
 
     /// Minor part of the TLS version
     pub minor: u8,
-}
-
-impl Parser for TlsParser {
-    type Result = Layer;
-    type Variant = ParserVariant;
-
-    /// Parse an TLS frame from an u8 slice.
-    fn parse<'a>(&self,
-                 input: &'a [u8],
-                 _: Option<&ParserNode<Layer, ParserVariant>>,
-                 _: Option<&ParserArena<Layer, ParserVariant>>,
-                 result: Option<&Vec<Layer>>)
-                 -> IResult<&'a [u8], (Layer, ParserState)> {
-        do_parse!(input,
-            // Check the transport protocol from the parent parser (TCP)
-            expr_opt!(match result {
-                Some(vector) => match vector.last() {
-                    // Check the parent node for the correct transport protocol
-                    Some(&Layer::Tcp(_)) => Some(()),
-
-                    // Previous result found, but not correct parent
-                    _ => None,
-                },
-                // Parse also if no result is given, for testability
-                None => Some(()),
-            }) >>
-
-            content_type: map_opt!(be_u8, TlsRecordContentType::from_u8) >>
-            version: take!(2) >>
-            length: be_u16 >>
-
-            (Layer::Tls(TlsPacket {
-                content_type: content_type,
-                version: TlsRecordVersion {
-                    major: version[0],
-                    minor: version[1],
-                },
-                length: length,
-            }), ParserState::ContinueWithFirstChild)
-        )
-    }
-
-    fn variant(&self) -> ParserVariant {
-        ParserVariant::Tls(self.clone())
-    }
 }

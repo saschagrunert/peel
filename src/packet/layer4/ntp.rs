@@ -5,60 +5,11 @@ use prelude::*;
 /// The UDP parser
 pub struct NtpParser;
 
-#[derive(Debug, Eq, PartialEq)]
-/// Representation of a Network Time Protocol packet
-pub struct NtpPacket {
-    /// Leap Indicator (2 Bit)
-    /// This field is used to warn of an impending leap second
-    pub li: u8,
-
-    /// NTP version number (3 Bit)
-    pub version: u8,
-
-    /// Mode (3 Bit)
-    pub mode: u8,
-
-    /// Stratum level of the local clock
-    pub stratum: u8,
-
-    /// The maximum interval between messages in seconds to the nearest power of two
-    pub poll: i8,
-
-    /// Precision of the local clock in seconds to the nearest power of two
-    pub precision: i8,
-
-    /// The total round trip delay to the primary reference source, in seconds with the fraction
-    /// point between bits 15 and 16. Positive and negative values are valid
-    pub root_delay: u32,
-
-    /// The maximum error relative to the primary reference source in seconds with the fraction
-    /// point between bits 15 and 16. Only positive values greater than zero are valid
-    pub root_dispersion: u32,
-
-    /// Reference clock identifier. Used to identify the particular reference clock.
-    pub ref_id: u32,
-
-    /// Reference timestamp. The local time at which the local clock was last set or corrected.
-    pub ts_ref: u64,
-
-    /// Originate timestamp. The local time when the client sent the request.
-    pub ts_orig: u64,
-
-    /// Receive timestamp. The local time when the request was received by the server.
-    pub ts_recv: u64,
-
-    /// Transmit timestamp. The local time when the reply was sent from the server.
-    pub ts_xmit: u64,
-
-    /// Authenticator. (0 or 96 Bit) See section 7.5 of [RFC5905] and [RFC7822]
-    pub auth: Option<(u32, Vec<u8>)>,
-}
-
 impl Parser for NtpParser {
     type Result = Layer;
     type Variant = ParserVariant;
 
-    /// Parse an NTP frame from an u8 slice.
+    /// Parse a `NtpPacket` from an `&[u8]`
     fn parse<'a>(&self,
                  input: &'a [u8],
                  _: Option<&ParserNode<Layer, ParserVariant>>,
@@ -119,4 +70,53 @@ impl Parser for NtpParser {
     fn variant(&self) -> ParserVariant {
         ParserVariant::Ntp(self.clone())
     }
+}
+
+#[derive(Debug, Eq, PartialEq)]
+/// Representation of a Network Time Protocol packet
+pub struct NtpPacket {
+    /// Leap Indicator (2 Bit)
+    /// This field is used to warn of an impending leap second
+    pub li: u8,
+
+    /// NTP version number (3 Bit)
+    pub version: u8,
+
+    /// Mode (3 Bit)
+    pub mode: u8,
+
+    /// Stratum level of the local clock
+    pub stratum: u8,
+
+    /// The maximum interval between messages in seconds to the nearest power of two
+    pub poll: i8,
+
+    /// Precision of the local clock in seconds to the nearest power of two
+    pub precision: i8,
+
+    /// The total round trip delay to the primary reference source, in seconds with the fraction
+    /// point between bits 15 and 16. Positive and negative values are valid
+    pub root_delay: u32,
+
+    /// The maximum error relative to the primary reference source in seconds with the fraction
+    /// point between bits 15 and 16. Only positive values greater than zero are valid
+    pub root_dispersion: u32,
+
+    /// Reference clock identifier. Used to identify the particular reference clock.
+    pub ref_id: u32,
+
+    /// Reference timestamp. The local time at which the local clock was last set or corrected.
+    pub ts_ref: u64,
+
+    /// Originate timestamp. The local time when the client sent the request.
+    pub ts_orig: u64,
+
+    /// Receive timestamp. The local time when the request was received by the server.
+    pub ts_recv: u64,
+
+    /// Transmit timestamp. The local time when the reply was sent from the server.
+    pub ts_xmit: u64,
+
+    /// Authenticator. (0 or 96 Bit) See section 7.5 of [RFC5905] and [RFC7822]
+    pub auth: Option<(u32, Vec<u8>)>,
 }
