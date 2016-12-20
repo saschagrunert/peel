@@ -1,7 +1,15 @@
 [package]
 name = "peel"
 version = "0.1.0"
+license = "MIT"
+readme = "README.md"
+keywords = ["packets", "tcp", "ip", "ethernet", "ipv4", "ipv6", "http", "ntp",
+            "udp", "peel", "parsing", "parser", "trie", "network"]
 authors = ["Sascha Grunert <mail@saschagrunert.de>"]
+repository = "https://github.com/saschagrunert/peel"
+homepage = "https://github.com/saschagrunert/peel"
+documentation = "https://docs.rs/peel"
+description = "Dynamic packet parsing within trees"
 
 [dependencies]
 lazy_static = "0"
