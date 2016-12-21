@@ -19,10 +19,10 @@ pub mod prelude {
     pub type PacketPeel = ::Peel<Layer, ParserVariant>;
 
     /// A shorthand for the packet parsing node
-    pub type PacketNode = ::ParserNode<Layer, ParserVariant>;
+    pub type PacketNode = ::parser::ParserNode<Layer, ParserVariant>;
 
     /// A shorthand for the packet parsing arena
-    pub type PacketArena = ::ParserArena<Layer, ParserVariant>;
+    pub type PacketArena = ::parser::ParserArena<Layer, ParserVariant>;
 
     /// Link
     pub use super::layer1::*;
