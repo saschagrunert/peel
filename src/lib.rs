@@ -31,14 +31,9 @@
 extern crate nom;
 
 #[macro_use]
-extern crate lazy_static;
-
-#[macro_use]
 extern crate log;
-
-extern crate indextree;
-extern crate regex;
 extern crate term;
+extern crate indextree;
 
 #[macro_use]
 pub mod error;

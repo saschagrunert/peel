@@ -8,7 +8,7 @@ use peel::prelude::*;
 #[bench]
 fn tree_generation(bencher: &mut Bencher) {
     bencher.iter(|| {
-        default_peel();
+        peel_tcp_ip();
     });
 }
 
@@ -34,7 +34,7 @@ static PACKET_ETH_IPV4_TCP_TLS: &'static [u8] =
 
 #[bench]
 fn tree_parsing(bencher: &mut Bencher) {
-    let peel = default_peel();
+    let peel = peel_tcp_ip();
     bencher.iter(|| {
         assert!(peel.traverse(PACKET_ETH_IPV4_TCP_TLS, vec![]).is_ok());
     });
@@ -43,12 +43,12 @@ fn tree_parsing(bencher: &mut Bencher) {
 
 #[bench]
 fn tree_traverse(bencher: &mut Bencher) {
-    let peel = default_peel();
+    let peel = peel_tcp_ip();
     bencher.iter(|| { for _ in peel.root.unwrap().traverse(&peel.arena) {} });
 }
 
 #[bench]
 fn tree_reverse_traverse(bencher: &mut Bencher) {
-    let peel = default_peel();
+    let peel = peel_tcp_ip();
     bencher.iter(|| { for _ in peel.root.unwrap().reverse_traverse(&peel.arena) {} });
 }

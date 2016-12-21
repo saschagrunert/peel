@@ -55,6 +55,35 @@ pub enum HttpPacket {
     Any,
 }
 
+impl HttpPacket {
+    named!(parse_plain<&[u8], Layer>,
+           alt!(call!(HttpRequest::parse) | call!(HttpResponse::parse))
+    );
+
+    fn parse_encrypted<'a>(input: &'a [u8], result: Option<&Vec<Layer>>) -> IResult<&'a [u8], Layer> {
+        expr_opt!(input,
+            match result {
+                Some(vector) => match vector.last() {
+                    Some(&Layer::Tls(_)) => {
+                        if let Some(transport_layer) = vector.iter().rev().nth(1) {
+                            match transport_layer {
+                                &Layer::Tcp(ref data) if (data.source_port == 443 || data.dest_port == 443) => {
+                                    Some(Layer::Http(HttpPacket::Any))
+                                }
+                                _ => None
+                            }
+                        } else {
+                            None // No transport layer available
+                        }
+                    },
+                    _ => None, // Previous result found, but not correct parent
+                },
+                _ => None,
+            }
+        )
+    }
+}
+
 #[derive(Debug, Eq, PartialEq)]
 /// A HTTP request representation
 pub struct HttpRequest {
@@ -225,33 +254,4 @@ impl HttpResponse {
             })))
         ))
     );
-}
-
-impl HttpPacket {
-    named!(parse_plain<&[u8], Layer>,
-           alt!(call!(HttpRequest::parse) | call!(HttpResponse::parse))
-    );
-
-    fn parse_encrypted<'a>(input: &'a [u8], result: Option<&Vec<Layer>>) -> IResult<&'a [u8], Layer> {
-        expr_opt!(input,
-            match result {
-                Some(vector) => match vector.last() {
-                    Some(&Layer::Tls(_)) => {
-                        if let Some(transport_layer) = vector.iter().rev().nth(1) {
-                            match transport_layer {
-                                &Layer::Tcp(ref data) if (data.source_port == 443 || data.dest_port == 443) => {
-                                    Some(Layer::Http(HttpPacket::Any))
-                                }
-                                _ => None
-                            }
-                        } else {
-                            None // No transport layer available
-                        }
-                    },
-                    _ => None, // Previous result found, but not correct parent
-                },
-                _ => None,
-            }
-        )
-    }
 }

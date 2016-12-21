@@ -13,8 +13,6 @@ description = "Dynamic packet parsing within trees"
 
 [dependencies]
 indextree = "0"
-lazy_static = "0"
 log = "0"
-nom = {version = "2", features = ["regexp_macros", "verbose-errors"]}
-regex = "0"
+nom = {version = "2", features = ["verbose-errors"]}
 term = "0"
