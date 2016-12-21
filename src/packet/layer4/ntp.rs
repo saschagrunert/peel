@@ -12,10 +12,10 @@ impl Parser for NtpParser {
     /// Parse a `NtpPacket` from an `&[u8]`
     fn parse<'a>(&self,
                  input: &'a [u8],
-                 _: Option<&ParserNode<Layer, ParserVariant>>,
-                 _: Option<&ParserArena<Layer, ParserVariant>>,
-                 result: Option<&Vec<Layer>>)
-                 -> IResult<&'a [u8], (Layer, ParserState)> {
+                 _: Option<&PacketNode>,
+                 _: Option<&PacketArena>,
+                 result: Option<&Vec<Self::Result>>)
+                 -> IResult<&'a [u8], (Self::Result, ParserState)> {
         do_parse!(input,
             // Check the transport protocol from the parent parser (UDP)
             expr_opt!(match result {
@@ -67,7 +67,7 @@ impl Parser for NtpParser {
         )
     }
 
-    fn variant(&self) -> ParserVariant {
+    fn variant(&self) -> Self::Variant {
         ParserVariant::Ntp(self.clone())
     }
 }

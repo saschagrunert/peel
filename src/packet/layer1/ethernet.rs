@@ -12,10 +12,10 @@ impl Parser for EthernetParser {
     /// Parse an `EthernetPacket` from an `&[u8]`
     fn parse<'a>(&self,
                  input: &'a [u8],
-                 _: Option<&ParserNode<Layer, ParserVariant>>,
-                 _: Option<&ParserArena<Layer, ParserVariant>>,
-                 _: Option<&Vec<Layer>>)
-                 -> IResult<&'a [u8], (Layer, ParserState)> {
+                 _: Option<&PacketNode>,
+                 _: Option<&PacketArena>,
+                 _: Option<&Vec<Self::Result>>)
+                 -> IResult<&'a [u8], (Self::Result, ParserState)> {
         do_parse!(input,
             d: take!(6) >>
             s: take!(6) >>
@@ -29,7 +29,7 @@ impl Parser for EthernetParser {
         )
     }
 
-    fn variant(&self) -> ParserVariant {
+    fn variant(&self) -> Self::Variant {
         ParserVariant::Ethernet(self.clone())
     }
 }

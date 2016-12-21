@@ -12,10 +12,10 @@ impl Parser for TlsParser {
     /// Parse a `TlsPacket` from an `&[u8]`
     fn parse<'a>(&self,
                  input: &'a [u8],
-                 _: Option<&ParserNode<Layer, ParserVariant>>,
-                 _: Option<&ParserArena<Layer, ParserVariant>>,
-                 result: Option<&Vec<Layer>>)
-                 -> IResult<&'a [u8], (Layer, ParserState)> {
+                 _: Option<&PacketNode>,
+                 _: Option<&PacketArena>,
+                 result: Option<&Vec<Self::Result>>)
+                 -> IResult<&'a [u8], (Self::Result, ParserState)> {
         do_parse!(input,
             // Check the transport protocol from the parent parser (TCP)
             expr_opt!(match result {
@@ -45,7 +45,7 @@ impl Parser for TlsParser {
         )
     }
 
-    fn variant(&self) -> ParserVariant {
+    fn variant(&self) -> Self::Variant {
         ParserVariant::Tls(self.clone())
     }
 }

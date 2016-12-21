@@ -15,8 +15,14 @@ pub mod prelude {
 
     pub use super::{Layer, ParserVariant, peel_tcp_ip};
 
-    /// A general shorthand for the packet parsing tree
+    /// A shorthand for the packet parsing tree
     pub type PacketPeel = ::Peel<Layer, ParserVariant>;
+
+    /// A shorthand for the packet parsing node
+    pub type PacketNode = ::ParserNode<Layer, ParserVariant>;
+
+    /// A shorthand for the packet parsing arena
+    pub type PacketArena = ::ParserArena<Layer, ParserVariant>;
 
     /// Link
     pub use super::layer1::*;
