@@ -1,6 +1,6 @@
 [package]
 name = "peel"
-version = "0.1.0"
+version = "0.0.1"
 license = "MIT"
 readme = "README.md"
 keywords = ["packets", "tcp", "ip", "ethernet", "ipv4", "ipv6", "http", "ntp",

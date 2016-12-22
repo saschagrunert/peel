@@ -1,8 +1,13 @@
-//! # Dynamic packet parsing within trees 🌲 🌳 🌴
+//! # Dynamic parsing within trees 🌲 🌳 🌴
 //!
-//! Target of this library is to provide a flexible parsing approach for network packets. This will be done within
-//! [arena](https://en.wikipedia.org/wiki/Region-based_memory_management) based [parser trees](https://en.wikipedia.org/wiki/Parse_tree)
-//! which can be modified during runtime. Other stacks beside the well known TCP/IP protocol family should be parsable too.
+//! Target of this library is to provide a flexible parsing approach for network packets. This will
+//! be done within [arena](https://en.wikipedia.org/wiki/Region-based_memory_management) based
+//! [parser trees](https://en.wikipedia.org/wiki/Parse_tree) which can be modified during runtime.
+//!
+//! An example included within this crate is the parsing of the
+//! [Internet Protocol Suite](https://en.wikipedia.org/wiki/Internet_protocol_suite).
+//! Beside this, it is possible to build own parser trees or include a custom parser within an
+//! already existing tree.
 //!
 //! ## Example usage
 //!
