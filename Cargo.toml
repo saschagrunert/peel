@@ -3,8 +3,7 @@ name = "peel"
 version = "0.0.1"
 license = "MIT"
 readme = "README.md"
-keywords = ["packets", "tcp", "ip", "ethernet", "ipv4", "ipv6", "http", "ntp",
-            "udp", "peel", "parsing", "parser", "trie", "network"]
+keywords = ["packets", "ip", "tree", "parser", "trie"]
 authors = ["Sascha Grunert <mail@saschagrunert.de>"]
 repository = "https://github.com/saschagrunert/peel"
 homepage = "https://github.com/saschagrunert/peel"
