@@ -1,8 +1,6 @@
 //! Basic error handling mechanisms
 use std::error::Error;
-use std::convert::From;
-use std::{io, fmt};
-use term;
+use std::fmt;
 
 /// The result type for the Parsing
 pub type PeelResult<'a, T> = Result<T, PeelError>;
@@ -43,37 +41,11 @@ impl Error for PeelError {
 #[derive(Debug, PartialEq, Eq)]
 /// Error codes as indicator what happened
 pub enum ErrorType {
-    /// Internal errors which should not happen at all
-    Internal,
-
     /// New nodes have to be added before traversing
     NoTreeRoot,
 
     /// The root parser failed already
     RootParserFailed,
-
-    /// Errors not directly from the library (like OS errors)
-    Other,
-}
-
-// Error conversion
-macro_rules! from_error {
-    ($($p:ty,)*) => (
-        $(impl From<$p> for PeelError {
-            fn from(err: $p) -> PeelError {
-                PeelError {
-                    code: ErrorType::Other,
-                    description: err.description().to_owned(),
-                    cause: Some(Box::new(err)),
-                }
-            }
-        })*
-    )
-}
-
-from_error! {
-    io::Error,
-    term::Error,
 }
 
 /// Throw an internal error

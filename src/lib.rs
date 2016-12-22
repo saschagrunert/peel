@@ -37,8 +37,8 @@ extern crate nom;
 
 #[macro_use]
 extern crate log;
-extern crate term;
 extern crate indextree;
+extern crate mowl;
 
 #[macro_use]
 pub mod error;
@@ -47,16 +47,14 @@ pub mod error;
 pub mod memcmp;
 pub mod packet;
 pub mod parser;
-mod logger;
 
 use std::iter;
 use std::collections::HashMap;
-use log::LogLevelFilter;
+use log::LogLevel;
 use indextree::{Arena, NodeId};
 
 use self::prelude::*;
 use parser::ParserBox;
-use logger::Logger;
 
 /// Provides sensible imports at all
 pub mod prelude {
@@ -98,20 +96,16 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
     /// # extern crate log;
     /// # extern crate peel;
     /// # fn main() {
-    /// use log::LogLevelFilter;
+    /// use log::LogLevel;
     /// use peel::prelude::*;
     ///
     /// let mut peel = peel_tcp_ip();
-    /// peel.set_log_level(LogLevelFilter::Trace);
+    /// peel.set_log_level(LogLevel::Trace);
     /// # }
     /// ```
-    pub fn set_log_level(&mut self, level: LogLevelFilter) {
+    pub fn set_log_level(&mut self, level: LogLevel) {
         // Setup the logger if not already set
-        if log::set_logger(|max_log_level| {
-                max_log_level.set(level);
-                Box::new(Logger)
-            })
-            .is_err() {
+        if mowl::init_with_level(level).is_err() {
             warn!("Logger already set.");
         };
         info!("Log level set to: {:?}", level);

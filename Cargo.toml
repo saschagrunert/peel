@@ -13,5 +13,5 @@ description = "Dynamic packet parsing within trees"
 [dependencies]
 indextree = "0"
 log = "0"
+mowl = "1"
 nom = {version = "2", features = ["verbose-errors"]}
-term = "0"
