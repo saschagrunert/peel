@@ -9,8 +9,9 @@ use self::prelude::*;
 
 pub mod prelude {
     //! Sensible defaults for the example parsers
-    pub use super::*;
-    pub use prelude::*;
+    pub use ::Peel;
+    pub use parser::{Parser, ParserNode, ParserArena, ParserState};
+    pub use super::{ParserResult, ParserVariant};
     pub use nom::IResult;
 
     /// Shorthand for our own personal memory arena
