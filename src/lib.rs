@@ -1,11 +1,5 @@
 //! # Dynamic parsing within trees 🌲 🌳 🌴
 //!
-//! Target of this library is to provide a flexible parsing approach parsers. This will
-//! be done within [arena](https://en.wikipedia.org/wiki/Region-based_memory_management) based
-//! [parser trees](https://en.wikipedia.org/wiki/Parse_tree) which can be modified during runtime.
-//!
-//! For a more advanced usage see the [`Peel`](struct.Peel.html) structure.
-//!
 #![deny(missing_docs)]
 
 #[macro_use]
@@ -47,7 +41,7 @@ pub struct Peel<R, V> {
 }
 
 impl<R, V> Peel<R, V> where V: fmt::Display {
-    /// Create a new emtpy `Peel` instance
+    /// Create a new empty `Peel` instance
     pub fn new() -> Self {
         Peel {
             arena: Arena::new(),
