@@ -11,4 +11,7 @@ within the [`src/example`](https://github.com/saschagrunert/peel/tree/master/src
 Every `Peel` instance can be seen as a parsing graph structure which has different states and transitions. In the
 example within the crate the structure looks like this:
 
+![Example parser diagram](.github/example.png)
+
+
 
