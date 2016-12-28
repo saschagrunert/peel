@@ -19,6 +19,7 @@ extern crate mowl;
 #[macro_use]
 pub mod error;
 pub mod parser;
+pub mod example;
 
 use std::{iter, fmt};
 use std::collections::HashMap;
