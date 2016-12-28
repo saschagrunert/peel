@@ -73,7 +73,7 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
         let new_node = self.arena.new_node(Box::new(parser));
 
         // Check if the root node is already set. If not, then this will be the root
-        if let None = self.root {
+        if self.root.is_none() {
             self.root = Some(new_node);
         }
 
@@ -122,8 +122,8 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
 
         for node_id in start_node.following_siblings(&self.arena) {
             // Get the initial values from the arena
-            let ref node = self.arena[node_id];
-            let ref parser = node.data;
+            let node = &self.arena[node_id];
+            let parser = &node.data;
 
             // Do the actual parsing work
             match parser.parse(input, Some(node), Some(&self.arena), Some(&result)) {
@@ -165,7 +165,7 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
                     // Stop here since we already succeed
                     break;
                 }
-                error @ _ => if log_enabled!(log::LogLevel::Trace) {
+                error => if log_enabled!(log::LogLevel::Trace) {
                     if Some(start_node) == self.root {
                         bail!(ErrorType::RootParserFailed, "No parser succeed at all");
                     }
@@ -183,7 +183,7 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
         level += 2;
         for child in node.children(&self.arena) {
             let indent = iter::repeat(' ').take(level).collect::<String>();
-            let ref parser = self.arena[child].data;
+            let parser = &self.arena[child].data;
             write!(f, "{}- {}: {:?}", indent, parser.variant(), child)?;
             writeln!(f, " ({})", self.arena[child])?;
             self.display_children(f, child, level)?;
