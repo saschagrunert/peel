@@ -1,5 +1,12 @@
 //! # Dynamic parsing within trees 🌲 🌳 🌴
 //!
+//! Target of this library is to provide a flexible approach in parsing data. This will mainly be
+//! done within [arena](https://en.wikipedia.org/wiki/Region-based_memory_management) based
+//! [parser trees](https://en.wikipedia.org/wiki/Parse_tree) which can be modified during runtime.
+//! Every parser is using the [nom](https://github.com/Geal/nom) framework for the actual parsing
+//! work. A complete source code example can be found within the
+//! [`src/example`](https://github.com/saschagrunert/peel/tree/master/src/example) directory of the
+//! crate.
 #![deny(missing_docs)]
 
 #[macro_use]

@@ -120,3 +120,43 @@ With the help of the [log](https://crates.io/crates/log) crate it will output:
 [Result1(true), Result2(true), Result3(true), Result3(true), Result4(true)]
 ```
 
+A minimal parser has to implement the `Parser` trait which could look like this:
+```rust
+pub struct Parser1;
+
+impl Parser for Parser1 {
+    /// The result of the parser
+    type Result = ParserResult;
+
+    /// The variant of the parser
+    type Variant = ParserVariant;
+
+    /// The actual parsing entry point
+    fn parse<'a>(&self,
+                 input: &'a [u8],                    // The input for the parser
+                 node: Option<&ExampleNode>,         // The current node within the tree
+                 arena: Option<&ExampleArena>,       // Access to possible other nodes via the arena
+                 result: Option<&Vec<Self::Result>>) // The current parsing result
+                 -> IResult<&'a [u8], (Self::Result, ParserState)> {
+        do_parse!(input,
+            tag!("1") >>
+            (ParserResult::Result1(true), ParserState::ContinueWithFirstChild)
+        )
+    }
+
+    // Returns the actual parser variant
+    fn variant(&self) -> Self::Variant {
+        ParserVariant::Variant1(self.clone())
+    }
+}
+```
+
+For event more advanced behavior the `node` and `arena` can be used to find out where the parser is located within the
+current structure. Access to the current parsing `result` is possible as well.
+
+## Current limitations
+- Result values referencing to the actual input is currently not implemented
+- Going back during traversal is not possible
+
+## Contributing
+You want to contribute to this project? Wow, thanks! So please just fork it and send me a pull request.
