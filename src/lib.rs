@@ -1,32 +1,8 @@
 //! # Dynamic parsing within trees 🌲 🌳 🌴
 //!
-//! Target of this library is to provide a flexible parsing approach for network packets. This will
+//! Target of this library is to provide a flexible parsing approach parsers. This will
 //! be done within [arena](https://en.wikipedia.org/wiki/Region-based_memory_management) based
 //! [parser trees](https://en.wikipedia.org/wiki/Parse_tree) which can be modified during runtime.
-//!
-//! An example included within this crate is the parsing of the
-//! [Internet Protocol Suite](https://en.wikipedia.org/wiki/Internet_protocol_suite).
-//! Beside this, it is possible to build own parser trees or include a custom parser within an
-//! already existing tree.
-//!
-//! ## Example usage
-//!
-//! ```
-//! use peel::prelude::*;
-//!
-//! // Get the default tree based on the TCP/IP stack
-//! let peel = peel_tcp_ip();
-//!
-//! let eth_header = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 8, 0];
-//!
-//! // Traverse the parser tree. If a parser matches check for available child parsers.
-//! // Stop parsing if there are no childs left. The `vec![]` memory will be used for
-//! // the resulting stack of `Layer`s.
-//! let result = peel.traverse(&eth_header, vec![]).unwrap();
-//!
-//! // There should be one parsed EthernetPacket in:
-//! assert_eq!(result.len(), 1);
-//! ```
 //!
 //! For a more advanced usage see the [`Peel`](struct.Peel.html) structure.
 //!
@@ -42,18 +18,15 @@ extern crate mowl;
 
 #[macro_use]
 pub mod error;
-
-#[macro_use]
-pub mod memcmp;
-pub mod packet;
 pub mod parser;
 
-use std::iter;
+use std::{iter, fmt};
 use std::collections::HashMap;
 use log::LogLevel;
 use indextree::{Arena, NodeId};
+use nom::{IResult, generate_colors, prepare_errors, print_codes, print_offsets};
 
-use self::prelude::*;
+use prelude::*;
 use parser::ParserBox;
 
 /// Provides sensible imports at all
@@ -61,8 +34,6 @@ pub mod prelude {
     pub use super::Peel;
     pub use error::{PeelResult, PeelError, ErrorType};
     pub use parser::{Parser, ParserNode, ParserArena, ParserState};
-
-    pub use packet::prelude::*;
 }
 
 /// The main peeling structure
@@ -76,12 +47,6 @@ pub struct Peel<R, V> {
 
 impl<R, V> Peel<R, V> where V: fmt::Display {
     /// Create a new emtpy `Peel` instance
-    ///
-    /// # Examples
-    /// ```
-    /// use peel::prelude::*;
-    /// let peel :PacketPeel = Peel::new();
-    /// ```
     pub fn new() -> Self {
         Peel {
             arena: Arena::new(),
@@ -90,19 +55,6 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
     }
 
     /// Set the global log level for reporting
-    ///
-    /// # Examples
-    /// ```
-    /// # extern crate log;
-    /// # extern crate peel;
-    /// # fn main() {
-    /// use log::LogLevel;
-    /// use peel::prelude::*;
-    ///
-    /// let mut peel = peel_tcp_ip();
-    /// peel.set_log_level(LogLevel::Trace);
-    /// # }
-    /// ```
     pub fn set_log_level(&mut self, level: LogLevel) {
         // Setup the logger if not already set
         if mowl::init_with_level(level).is_err() {
@@ -112,14 +64,6 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
     }
 
     /// Create a new boxed Parser and return a corresponding Node
-    ///
-    /// # Examples
-    /// ```
-    /// use peel::prelude::*;
-    ///
-    /// let mut p = Peel::new();
-    /// let eth = p.new_parser(EthernetParser);
-    /// ```
     pub fn new_parser<T>(&mut self, parser: T) -> NodeId
         where T: Parser<Result = R, Variant = V> + Send + Sync + 'static
     {
@@ -136,30 +80,11 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
     }
 
     /// Append the second node to the first one within the current tree structure
-    ///
-    /// # Examples
-    /// ```
-    /// use peel::prelude::*;
-    ///
-    /// let mut p = Peel::new();
-    /// let eth = p.new_parser(EthernetParser);
-    /// let ipv4 = p.new_parser(Ipv4Parser);
-    /// p.link(eth, ipv4);
-    /// ```
     pub fn link(&mut self, left: NodeId, right: NodeId) {
         left.append(right, &mut self.arena);
     }
 
     /// Create a new parser and link it with the provided node
-    ///
-    /// # Examples
-    /// ```
-    /// use peel::prelude::*;
-    ///
-    /// let mut p = Peel::new();
-    /// let eth = p.new_parser(EthernetParser);
-    /// let ipv4 = p.link_new_parser(eth, Ipv4Parser);
-    /// ```
     pub fn link_new_parser<T>(&mut self, left: NodeId, parser: T) -> NodeId
         where T: Parser<Result = R, Variant = V> + Send + Sync + 'static
     {
@@ -175,16 +100,6 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
 
     /// Convenient function for recursive traversal with the root as starting point
     ///
-    /// # Examples
-    /// ```
-    /// use peel::prelude::*;
-    ///
-    /// let peel = peel_tcp_ip();
-    /// let eth_header = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 8, 0];
-    /// let result = peel.traverse(&eth_header, vec![]).unwrap();
-    /// assert_eq!(result.len(), 1);
-    /// ```
-    ///
     /// # Errors
     /// When no tree root was found or the first parser already fails.
     pub fn traverse(&self, input: &[u8], result: Vec<R>) -> PeelResult<Vec<R>> {
@@ -197,16 +112,6 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
     /// Do parsing until all possible paths failed. This is equivalent in finding the deepest
     /// possible parsing result within the tree. The result will be assembled together in the
     /// given result vector, which will be returned at the end.
-    ///
-    /// # Examples
-    /// ```
-    /// use peel::prelude::*;
-    ///
-    /// let peel = peel_tcp_ip();
-    /// let eth_header = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 8, 0];
-    /// let result = peel.traverse_recursive(peel.root.unwrap(), &eth_header, vec![]).unwrap();
-    /// assert_eq!(result.len(), 1);
-    /// ```
     ///
     /// # Errors
     /// When the first parser already fails.
@@ -271,14 +176,6 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
     }
 
     /// Display the trees children by recursive iteration
-    ///
-    /// # Examples
-    /// ```
-    /// use peel::prelude::*;
-    ///
-    /// let peel = peel_tcp_ip();
-    /// println!("{}", peel);
-    /// ```
     fn display_children(&self, f: &mut fmt::Formatter, node: NodeId, mut level: usize)
         -> fmt::Result {
         level += 2;
@@ -293,18 +190,6 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
     }
 
     /// Display an error from a parser
-    ///
-    /// # Examples
-    /// ```
-    /// use peel::prelude::*;
-    ///
-    /// let peel = peel_tcp_ip();
-    /// let eth_header = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 0, 0];
-    ///
-    /// let parser = EthernetParser;
-    /// let res = parser.parse(&eth_header, None, None, None);
-    /// peel.display_error(&eth_header, res);
-    /// ```
     pub fn display_error(&self, input: &[u8], res: IResult<&[u8], (R, ParserState)>) {
         let mut h: HashMap<u32, &str> = HashMap::new();
         let parsers = ["Custom", "Tag", "MapRes", "MapOpt", "Alt", "IsNot", "IsA", "SeparatedList",

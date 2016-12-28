@@ -1,6 +1,6 @@
 [package]
 name = "peel"
-version = "0.0.1"
+version = "0.0.2"
 license = "MIT"
 readme = "README.md"
 keywords = ["packets", "ip", "tree", "parser", "trie"]
@@ -15,3 +15,6 @@ indextree = "0"
 log = "0"
 mowl = "1"
 nom = {version = "2", features = ["verbose-errors"]}
+
+[dev-dependencies]
+peel-ip = {git = "https://github.com/saschagrunert/peel-ip"}
