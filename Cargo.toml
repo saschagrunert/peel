@@ -17,4 +17,4 @@ mowl = "1"
 nom = {version = "2", features = ["verbose-errors"]}
 
 [dev-dependencies]
-peel-ip = {git = "https://github.com/saschagrunert/peel-ip"}
+peel-ip = "0"
