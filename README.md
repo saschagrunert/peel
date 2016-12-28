@@ -39,7 +39,7 @@ pub fn peel_example() -> Peel<ParserResult, ParserVariant> {
 
 The first created parser will automatically be the root parser and the entry point for the tree traversal. Every parser
 returns an actual result, which will be pushed into a vector. This means for our example that the result is an enum of
-different types:
+different types (in this case only `bool` values for simplicity):
 
 ```rust
 /// Return values of the parsers
@@ -82,11 +82,41 @@ So in our example image above we have the following available stages:
     - Succeed: `ContinueWithFirstChild`
     - Failed: Return an error
 - *Parser 2*:
-    - Succeed: Overall parsing done, because no child parsers left
-    - Failed: `ContinueWithNextSibling`
+    - Succeed/Failed: `ContinueWithNextSibling`
 - *Parser 3*:
-    - Succeed: `ContinueWithFirstChild`
-    - Failed: `ContinueWithCurrent`
+    - Succeed:
+        - Internal pattern matched: `ContinueWithCurrent`
+        - Internal Pattern not matched: `ContinueWithFirstChild`
+    - Failed: Overall parsing done, because no siblings left
 - *Parser 4*:
     - Failed/Succeed: Overall parsing done, because no child parsers left
+
+This means that the traversal method of `Peel` will try to find the deepest possible path within the tree structure,
+whereas the parsers itself can tell `Peel` how to continue beside the default `ContinueWithFirstChild` behavior.
+
+After the creation of the structure the traversal can begin:
+
+```rust
+let mut peel = peel_example();
+peel.set_log_level(LogLevel::Trace);
+let result = peel.traverse(b"1234", vec![]).unwrap();
+
+assert_eq!(result.len(), 5);
+println!("{:?}", result);
+```
+
+With the help of the [log](https://crates.io/crates/log) crate it will output:
+```
+[peel] [INFO ] Log level set to: Trace
+[peel] [DEBUG] Parser 1 parsing succeed, left input length: 3
+[peel] [DEBUG] Continue traversal to first child of the parser
+[peel] [DEBUG] Parser 2 parsing succeed, left input length: 2
+[peel] [DEBUG] Continue traversal to next sibling of the parser
+[peel] [DEBUG] Parser 3 parsing succeed, left input length: 1
+[peel] [DEBUG] Trying the current parser again
+[peel] [DEBUG] Parser 3 parsing succeed, left input length: 1
+[peel] [DEBUG] Continue traversal to first child of the parser
+[peel] [DEBUG] Parser 4 parsing succeed, left input length: 0
+[Result1(true), Result2(true), Result3(true), Result3(true), Result4(true)]
+```
 
