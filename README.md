@@ -13,5 +13,80 @@ example within the crate the structure looks like this:
 
 ![Example parser diagram](.github/example.png)
 
+Independently of what these parser do, the creation of this structure is done within the `peel_example` function:
 
+```rust
+/// Return a `Peel` instance for the example parsers
+pub fn peel_example() -> Peel<ParserResult, ParserVariant> {
+    // Create a tree
+    let mut p = Peel::new();
+
+    // Create and link the parsers
+    let parser_1 = p.new_parser(Parser1);
+
+    // Append Parser2 to Parser1
+    p.link_new_parser(parser_1, Parser2);
+
+    // Append Parser3 to Parser1
+    let parser_3 = p.link_new_parser(parser_1, Parser3);
+
+    // Append Parser4 to Parser3
+    p.link_new_parser(parser_3, Parser4);
+
+    p
+}
+```
+
+The first created parser will automatically be the root parser and the entry point for the tree traversal. Every parser
+returns an actual result, which will be pushed into a vector. This means for our example that the result is an enum of
+different types:
+
+```rust
+/// Return values of the parsers
+pub enum ParserResult {
+    /// The result of the first example parser
+    Result1(bool),
+
+    /// The result of the second example parser
+    Result2(bool),
+
+    /// The result of the third example parser
+    Result3(bool),
+
+    /// The result of the fourth example parser
+    Result4(bool),
+}
+```
+
+Beside this result a `ParserState` is needed to make a decision about the next parsing step:
+
+```rust
+/// Possible actions to be done if a parser succeed
+pub enum ParserState {
+    /// Default behavior, continue traversing the Parser tree with the next child
+    ContinueWithFirstChild,
+
+    /// Continue traversing with the next sibling of the current parser
+    ContinueWithNextSibling,
+
+    /// Continue traversing with the current parser
+    ContinueWithCurrent,
+
+    /// Immediately stop the parsing
+    Stop,
+}
+```
+
+So in our example image above we have the following available stages:
+- *Parser 1*:
+    - Succeed: `ContinueWithFirstChild`
+    - Failed: Return an error
+- *Parser 2*:
+    - Succeed: Overall parsing done, because no child parsers left
+    - Failed: `ContinueWithNextSibling`
+- *Parser 3*:
+    - Succeed: `ContinueWithFirstChild`
+    - Failed: `ContinueWithCurrent`
+- *Parser 4*:
+    - Failed/Succeed: Overall parsing done, because no child parsers left
 

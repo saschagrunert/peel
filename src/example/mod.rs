@@ -63,9 +63,14 @@ pub fn peel_example() -> Peel<ParserResult, ParserVariant> {
 
     // Create and link the parsers
     let parser_1 = p.new_parser(Parser1);
-    let parser_2 = p.link_new_parser(parser_1, Parser2);
+
+    // Append Parser2 to Parser1
+    p.link_new_parser(parser_1, Parser2);
+
+    // Append Parser3 to Parser1
     let parser_3 = p.link_new_parser(parser_1, Parser3);
-    p.link_new_parser(parser_2, Parser4);
+
+    // Append Parser4 to Parser3
     p.link_new_parser(parser_3, Parser4);
 
     p
