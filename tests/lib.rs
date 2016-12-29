@@ -13,12 +13,11 @@ fn peel_success_1234() {
     peel.set_log_level(LogLevel::Trace);
     let result = peel.traverse(b"1234", vec![]).unwrap();
 
-    assert_eq!(result.len(), 5);
-    assert_eq!(result[0], ParserResult::Result1(true));
-    assert_eq!(result[1], ParserResult::Result2(true));
-    assert_eq!(result[2], ParserResult::Result3(true));
-    assert_eq!(result[3], ParserResult::Result3(true));
-    assert_eq!(result[4], ParserResult::Result4(true));
+    assert_eq!(result.len(), 4);
+    assert_eq!(result[0], ParserResult::Result1);
+    assert_eq!(result[1], ParserResult::Result2);
+    assert_eq!(result[2], ParserResult::Result3);
+    assert_eq!(result[3], ParserResult::Result4);
 }
 
 #[test]
@@ -28,17 +27,16 @@ fn peel_success_133() {
     let result = peel.traverse(b"133", vec![]).unwrap();
 
     assert_eq!(result.len(), 3);
-    assert_eq!(result[0], ParserResult::Result1(true));
-    assert_eq!(result[1], ParserResult::Result3(true));
-    assert_eq!(result[2], ParserResult::Result3(true));
+    assert_eq!(result[0], ParserResult::Result1);
+    assert_eq!(result[1], ParserResult::Result3);
+    assert_eq!(result[2], ParserResult::Result3);
 }
 
 #[test]
 fn peel_success_parser1() {
     let parser = Parser1;
     let result = parser.parse(b"1", None, None, None).unwrap().1;
-    assert_eq!(result.0, ParserResult::Result1(true));
-    assert_eq!(result.1, ParserState::ContinueWithFirstChild);
+    assert_eq!(result, ParserResult::Result1);
 }
 
 #[test]

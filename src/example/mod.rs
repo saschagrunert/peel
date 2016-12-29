@@ -10,15 +10,12 @@ use self::prelude::*;
 pub mod prelude {
     //! Sensible defaults for the example parsers
     pub use ::Peel;
-    pub use parser::{Parser, ParserNode, ParserArena, ParserState};
+    pub use parser::{Parser, ParserNode, ParserGraph};
     pub use super::{ParserResult, ParserVariant, peel_example};
     pub use nom::IResult;
 
     /// Shorthand for our own personal memory arena
-    pub type ExampleArena = ParserArena<ParserResult, ParserVariant>;
-
-    /// Shorthand for our own personal node
-    pub type ExampleNode = ParserNode<ParserResult, ParserVariant>;
+    pub type ExampleGraph = ParserGraph<ParserResult, ParserVariant>;
 
     pub use example::parser1::*;
     pub use example::parser2::*;
@@ -45,16 +42,16 @@ pub enum ParserVariant {
 /// Return values of the parsers
 pub enum ParserResult {
     /// The result of the first example parser
-    Result1(bool),
+    Result1,
 
     /// The result of the second example parser
-    Result2(bool),
+    Result2,
 
     /// The result of the third example parser
-    Result3(bool),
+    Result3,
 
     /// The result of the fourth example parser
-    Result4(bool),
+    Result4,
 }
 
 /// Return a `Peel` instance for the example parsers
@@ -66,10 +63,16 @@ pub fn peel_example() -> Peel<ParserResult, ParserVariant> {
     let parser_1 = p.new_parser(Parser1);
 
     // Append Parser2 to Parser1
-    p.link_new_parser(parser_1, Parser2);
+    let parser_2 = p.link_new_parser(parser_1, Parser2);
 
     // Append Parser3 to Parser1
     let parser_3 = p.link_new_parser(parser_1, Parser3);
+
+    // Parser 3 referse to itself
+    p.link(parser_3, parser_3);
+
+    // Parser 2 referse to Parser 3
+    p.link(parser_2, parser_3);
 
     // Append Parser4 to Parser3
     p.link_new_parser(parser_3, Parser4);

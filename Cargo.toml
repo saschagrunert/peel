@@ -11,7 +11,7 @@ documentation = "https://docs.rs/peel"
 description = "Dynamic packet parsing within trees"
 
 [dependencies]
-indextree = "0"
+petgraph = "0"
 log = "0"
 mowl = "1"
 nom = {version = "2", features = ["verbose-errors"]}

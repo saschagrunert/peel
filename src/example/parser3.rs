@@ -12,16 +12,13 @@ impl Parser for Parser3 {
     /// The actual parsing entry point
     fn parse<'a>(&self,
                  input: &'a [u8],
-                 _: Option<&ExampleNode>,
-                 _: Option<&ExampleArena>,
+                 _: Option<&ParserNode>,
+                 _: Option<&ExampleGraph>,
                  _: Option<&Vec<Self::Result>>)
-                 -> IResult<&'a [u8], (Self::Result, ParserState)> {
+                 -> IResult<&'a [u8], Self::Result> {
         do_parse!(input,
-            res: opt!(tag!("3")) >>
-            (ParserResult::Result3(true), match res {
-                Some(_) => ParserState::ContinueWithCurrent,
-                None => ParserState::ContinueWithFirstChild,
-            })
+            tag!("3") >>
+            (ParserResult::Result3)
         )
     }
 
