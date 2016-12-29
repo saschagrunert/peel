@@ -3,7 +3,6 @@ extern crate peel;
 use peel::error::*;
 
 use std::io;
-use std::error::Error;
 
 #[test]
 fn success_convert_from_io_error() {
