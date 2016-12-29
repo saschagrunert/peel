@@ -23,15 +23,18 @@ pub mod parser;
 pub mod example;
 
 use std::fmt;
+use std::fs::File;
+use std::io::prelude::*;
 use std::collections::HashMap;
 
 use log::LogLevel;
 use nom::{IResult, generate_colors, prepare_errors, print_codes, print_offsets};
 
-use petgraph::Direction;
+use petgraph::{Graph, Direction};
+use petgraph::dot::{Dot, Config};
 use petgraph::graph::NodeIndex;
 use petgraph::stable_graph::StableGraph;
-use petgraph::visit::EdgeRef;
+use petgraph::visit::{EdgeRef, IntoEdgeReferences};
 
 use prelude::*;
 use parser::ParserBox;
@@ -46,13 +49,15 @@ pub mod prelude {
 /// The main peeling structure
 pub struct Peel<R, V> {
     /// The memory arena of the tree
-    pub graph: StableGraph<ParserBox<R, V>, u8>,
+    pub graph: StableGraph<ParserBox<R, V>, ()>,
 
     /// The first node added will be the root
     pub root: Option<NodeIndex>,
 }
 
-impl<R, V> Peel<R, V> where V: fmt::Display {
+impl<R, V> Peel<R, V>
+    where V: fmt::Display
+{
     /// Create a new empty `Peel` instance
     pub fn new() -> Self {
         Peel {
@@ -88,7 +93,7 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
 
     /// Append the second node to the first one within the current tree structure
     pub fn link(&mut self, left: NodeIndex, right: NodeIndex) {
-        self.graph.add_edge(left, right, 0);
+        self.graph.add_edge(left, right, ());
     }
 
     /// Create a new parser and link it with the provided node
@@ -99,7 +104,7 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
         let new_parser = self.new_parser(parser);
 
         // Append the node to the given node
-        self.graph.add_edge(left, new_parser, 0);
+        self.graph.add_edge(left, new_parser, ());
 
         // Return the parser
         new_parser
@@ -122,8 +127,7 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
     ///
     /// # Errors
     /// When the first parser already fails.
-    pub fn traverse_recursive(&self, node_id: NodeIndex, input: &[u8], mut result: Vec<R>)
-        -> PeelResult<Vec<R>> {
+    pub fn traverse_recursive(&self, node_id: NodeIndex, input: &[u8], mut result: Vec<R>) -> PeelResult<Vec<R>> {
 
         // Get the values from the graph structure
         let parser = &self.graph[node_id];
@@ -132,7 +136,9 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
         match parser.parse(input, Some(&node_id), Some(&self.graph), Some(&result)) {
             IResult::Done(input_left, parser_result) => {
                 // Adapt the result
-                debug!("{} parsing succeed, left input length: {}", parser.variant(), input_left.len());
+                debug!("{} parsing succeed, left input length: {}",
+                       parser.variant(),
+                       input_left.len());
                 result.push(parser_result);
 
                 // Continue traversal if needed
@@ -145,32 +151,101 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
                         break;
                     }
                 }
-            },
-            error => if log_enabled!(log::LogLevel::Trace) {
-                if Some(node_id) == self.root {
-                    bail!(ErrorType::RootParserFailed, "No parser succeed at all");
+            }
+            error => {
+                if log_enabled!(log::LogLevel::Trace) {
+                    if Some(node_id) == self.root {
+                        bail!(ErrorType::RootParserFailed, "No parser succeed at all");
+                    }
+                    debug!("Failed parser: {}", parser.variant());
+                    self.display_error(input, error);
                 }
-                debug!("Failed parser: {}", parser.variant());
-                self.display_error(input, error);
-            },
+            }
         }
         Ok(result)
+    }
+
+    /// Create a graphviz `graph.dot` file representation in the current directory
+    pub fn create_dot_file(&mut self) -> PeelResult<()> {
+        // Create a temporarily graph for conversion
+        let mut graph = Graph::<_, ()>::new();
+
+        // Convert the nodes
+        for node_id in self.graph.node_indices() {
+            let parser = &self.graph[node_id];
+            graph.add_node(format!("{}", parser.variant()));
+        }
+
+        // Convert the edges
+        for edge in self.graph.edge_references() {
+            graph.add_edge(edge.source(), edge.target(), ());
+        }
+
+        let mut f = File::create("graph.dot")?;
+        f.write_all(format!("{:?}", Dot::with_config(&graph, &[Config::EdgeNoLabel])).as_bytes())?;
+        Ok(())
     }
 
     /// Display an error from a parser
     pub fn display_error(&self, input: &[u8], res: IResult<&[u8], R>) {
         let mut h: HashMap<u32, &str> = HashMap::new();
-        let parsers = ["Custom", "Tag", "MapRes", "MapOpt", "Alt", "IsNot", "IsA", "SeparatedList",
-                       "SeparatedNonEmptyList", "Many1", "Count", "TakeUntilAndConsume",
-                       "TakeUntil", "TakeUntilEitherAndConsume", "TakeUntilEither", "LengthValue",
-                       "TagClosure", "Alpha", "Digit", "AlphaNumeric", "Space", "MultiSpace",
-                       "LengthValueFn", "Eof", "ExprOpt", "ExprRes", "CondReduce", "Switch",
-                       "TagBits", "OneOf", "NoneOf", "Char", "CrLf", "RegexpMatch",
-                       "RegexpMatches", "RegexpFind", "RegexpCapture", "RegexpCaptures",
-                       "TakeWhile1", "Complete", "Fix", "Escaped", "EscapedTransform", "TagStr",
-                       "IsNotStr", "IsAStr", "TakeWhile1Str", "NonEmpty", "ManyMN",
-                       "TakeUntilAndConsumeStr", "HexDigit", "TakeUntilStr", "OctDigit", "Many0",
-                       "Not", "Permutation", "ManyTill"];
+        let parsers = ["Custom",
+                       "Tag",
+                       "MapRes",
+                       "MapOpt",
+                       "Alt",
+                       "IsNot",
+                       "IsA",
+                       "SeparatedList",
+                       "SeparatedNonEmptyList",
+                       "Many1",
+                       "Count",
+                       "TakeUntilAndConsume",
+                       "TakeUntil",
+                       "TakeUntilEitherAndConsume",
+                       "TakeUntilEither",
+                       "LengthValue",
+                       "TagClosure",
+                       "Alpha",
+                       "Digit",
+                       "AlphaNumeric",
+                       "Space",
+                       "MultiSpace",
+                       "LengthValueFn",
+                       "Eof",
+                       "ExprOpt",
+                       "ExprRes",
+                       "CondReduce",
+                       "Switch",
+                       "TagBits",
+                       "OneOf",
+                       "NoneOf",
+                       "Char",
+                       "CrLf",
+                       "RegexpMatch",
+                       "RegexpMatches",
+                       "RegexpFind",
+                       "RegexpCapture",
+                       "RegexpCaptures",
+                       "TakeWhile1",
+                       "Complete",
+                       "Fix",
+                       "Escaped",
+                       "EscapedTransform",
+                       "TagStr",
+                       "IsNotStr",
+                       "IsAStr",
+                       "TakeWhile1Str",
+                       "NonEmpty",
+                       "ManyMN",
+                       "TakeUntilAndConsumeStr",
+                       "HexDigit",
+                       "TakeUntilStr",
+                       "OctDigit",
+                       "Many0",
+                       "Not",
+                       "Permutation",
+                       "ManyTill"];
 
         for (i, literal) in parsers.iter().enumerate() {
             h.insert(i as u32, literal);
@@ -179,7 +254,7 @@ impl<R, V> Peel<R, V> where V: fmt::Display {
         if let Some(v) = prepare_errors(input, res) {
             let colors = generate_colors(&v);
             println!("Colors: {}", print_codes(colors, h));
-            println!("Dump: \n{}",   print_offsets(input, 0, &v));
+            println!("Dump: \n{}", print_offsets(input, 0, &v));
         }
     }
 }

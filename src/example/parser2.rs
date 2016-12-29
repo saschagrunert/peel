@@ -16,10 +16,7 @@ impl Parser for Parser2 {
                  _: Option<&ExampleGraph>,
                  _: Option<&Vec<Self::Result>>)
                  -> IResult<&'a [u8], Self::Result> {
-        do_parse!(input,
-            tag!("2") >>
-            (ParserResult::Result2)
-        )
+        do_parse!(input, tag!("2") >> (ParserResult::Result2))
     }
 
     fn variant(&self) -> Self::Variant {

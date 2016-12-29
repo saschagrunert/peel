@@ -33,6 +33,12 @@ fn peel_success_133() {
 }
 
 #[test]
+fn peel_success_dot() {
+    let mut peel = peel_example();
+    assert!(peel.create_dot_file().is_ok());
+}
+
+#[test]
 fn peel_success_parser1() {
     let parser = Parser1;
     let result = parser.parse(b"1", None, None, None).unwrap().1;

@@ -1,6 +1,6 @@
 //! Basic error handling mechanisms
 use std::error::Error;
-use std::fmt;
+use std::{fmt, io};
 
 /// The result type for the Parsing
 pub type PeelResult<'a, T> = Result<T, PeelError>;
@@ -38,6 +38,25 @@ impl Error for PeelError {
     }
 }
 
+// Error conversion
+macro_rules! from_error {
+    ($($p:ty,)*) => (
+        $(impl From<$p> for PeelError {
+            fn from(err: $p) -> PeelError {
+                PeelError {
+                    code: ErrorType::Other,
+                    description: err.description().to_owned(),
+                    cause: Some(Box::new(err)),
+                }
+            }
+        })*
+    )
+}
+
+from_error! {
+    io::Error,
+}
+
 #[derive(Debug, PartialEq, Eq)]
 /// Error codes as indicator what happened
 pub enum ErrorType {
@@ -46,6 +65,9 @@ pub enum ErrorType {
 
     /// The root parser failed already
     RootParserFailed,
+
+    /// The error originates from another error
+    Other,
 }
 
 /// Throw an internal error
