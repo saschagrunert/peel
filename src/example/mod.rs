@@ -14,9 +14,6 @@ pub mod prelude {
     pub use super::{ParserResult, ParserVariant, peel_example};
     pub use nom::IResult;
 
-    /// Shorthand for our own personal memory arena
-    pub type ExampleGraph = ParserGraph<ParserResult, ParserVariant>;
-
     pub use example::parser1::*;
     pub use example::parser2::*;
     pub use example::parser3::*;

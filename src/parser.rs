@@ -22,14 +22,9 @@ pub trait Parser {
     type Variant;
 
     /// Parse using nom and return the result
-    fn parse<'a>(&self,
-                 input: &'a [u8],
-                 node: Option<&ParserNode>,
-                 arena: Option<&ParserGraph<Self::Result, Self::Variant>>,
-                 result: Option<&Vec<Self::Result>>)
-                 -> IResult<&'a [u8], Self::Result>;
+    fn parse<'a>(&mut self, input: &'a [u8], result: Option<&Vec<Self::Result>>) -> IResult<&'a [u8], Self::Result>;
 
-    /// Return the actual enum variant of the parser
+    /// Return the actual enum variant of the parser as a clone
     fn variant(&self) -> Self::Variant;
 }
 
