@@ -10,13 +10,13 @@ impl Parser for Parser1 {
     type Variant = ParserVariant;
 
     /// The actual parsing entry point
-    fn parse<'a>(&self,
+    fn parse<'a>(&mut self,
                  input: &'a [u8],
-                 _: Option<&ParserNode>,
-                 _: Option<&ExampleGraph>,
                  _: Option<&Vec<Self::Result>>)
                  -> IResult<&'a [u8], Self::Result> {
-        do_parse!(input, tag!("1") >> (ParserResult::Result1))
+        do_parse!(input,
+                  tag!("1") >>
+                  (ParserResult::Result1))
     }
 
     fn variant(&self) -> Self::Variant {

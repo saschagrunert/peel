@@ -18,7 +18,6 @@ Independently of what these parser do, the creation of this structure is done wi
 ```rust
 /// Return a `Peel` instance for the example parsers
 pub fn peel_example() -> Peel<ParserResult, ParserVariant> {
-pub fn peel_example() -> Peel<ParserResult, ParserVariant> {
     // Create a tree
     let mut p = Peel::new();
 
@@ -44,9 +43,9 @@ pub fn peel_example() -> Peel<ParserResult, ParserVariant> {
 }
 ```
 
-The first created parser will automatically be the root parser and the entry point for the tree traversal. Every parser
-returns an actual result, which will be pushed into a vector. This means for our example that the result is an enum of
-different types:
+The first created parser will automatically be the root parser and the entry point for the tree traversal. Every
+succeeding parser returns a certain result, which will be pushed into a vector. This means for our example that the
+result is an enum of different types:
 
 ```rust
 /// Return values of the parsers
@@ -101,8 +100,6 @@ impl Parser for Parser1 {
     /// The actual parsing entry point
     fn parse<'a>(&self,
                  input: &'a [u8],                    // The input for the parser
-                 node: Option<&ParserNode>,          // The current node within the tree
-                 graph: Option<&ExampleGraph>,       // Access to possible other nodes via the graph
                  result: Option<&Vec<Self::Result>>) // The current parsing result
                  -> IResult<&'a [u8], Self::Result> {
         do_parse!(input,
@@ -118,12 +115,8 @@ impl Parser for Parser1 {
 }
 ```
 
-For event more advanced behavior the `node` and `graph` can be used to find out where the parser is located within the
-current structure. Access to the current parsing `result` is possible as well.
-
-## Current limitations
-- Result values referencing to the actual input is currently not implemented
-- Going back during traversal is not possible
+It is possible to access the current parsing `result` for a more advanced behavior like dependency checks during the
+parsing.
 
 ## Contributing
 You want to contribute to this project? Wow, thanks! So please just fork it and send me a pull request.

@@ -114,7 +114,7 @@ impl<R, V> Peel<R, V>
     ///
     /// # Errors
     /// When no tree root was found or the first parser already fails.
-    pub fn traverse(&self, input: &[u8], result: Vec<R>) -> PeelResult<Vec<R>> {
+    pub fn traverse(&mut self, input: &[u8], result: Vec<R>) -> PeelResult<Vec<R>> {
         match self.root {
             Some(node) => self.traverse_recursive(node, input, result),
             None => bail!(ErrorType::NoTreeRoot, "No tree root found"),
@@ -127,24 +127,52 @@ impl<R, V> Peel<R, V>
     ///
     /// # Errors
     /// When the first parser already fails.
-    pub fn traverse_recursive(&self, node_id: NodeIndex, input: &[u8], mut result: Vec<R>) -> PeelResult<Vec<R>> {
+    pub fn traverse_recursive(&mut self, node_id: NodeIndex, input: &[u8], mut result: Vec<R>) -> PeelResult<Vec<R>> {
 
-        // Get the values from the graph structure
-        let parser = &self.graph[node_id];
+        let (left_input, error) = {
+            // Get the values from the graph structure
+            let parser = &mut self.graph[node_id];
 
-        // Do the actual parsing work
-        match parser.parse(input, Some(&node_id), Some(&self.graph), Some(&result)) {
-            IResult::Done(input_left, parser_result) => {
-                // Adapt the result
-                debug!("{} parsing succeed, left input length: {}",
-                       parser.variant(),
-                       input_left.len());
-                result.push(parser_result);
+            // Do the actual parsing work
+            match parser.parse(input, Some(&result)) {
+                // Parsing succeed
+                IResult::Done(left_input, parser_result) => {
+                    debug!("{} parsing succeed, left input length: {}",
+                           parser.variant(),
+                           left_input.len());
+                    // Adapt the result
+                    result.push(parser_result);
+                    (left_input, None)
+                }
 
-                // Continue traversal if needed
-                for edge in self.graph.edges_directed(node_id, Direction::Outgoing) {
+                // Parsing failed
+                error => {
+                    trace!("Failed parser: {}", parser.variant());
+                    if Some(node_id) == self.root {
+                        bail!(ErrorType::RootParserFailed, "No parser succeed at all");
+                    }
+                    (input, Some(error))
+                }
+            }
+        };
+
+        match error {
+            // Display the parsing error if needed
+            Some(error) => {
+                if log_enabled!(log::LogLevel::Trace) {
+                    self.display_error(input, error);
+                }
+            }
+
+            // Continue traversal if needed
+            _ => {
+                let mut edges = self.graph.neighbors_directed(node_id, Direction::Outgoing).detach();
+                while let Some(node) = edges.next_node(&self.graph) {
+                    // Save the previous result length
                     let prev_len = result.len();
-                    result = self.traverse_recursive(edge.target(), input_left, result)?;
+
+                    // Do the recursion
+                    result = self.traverse_recursive(node, left_input, result)?;
 
                     // Stop going deeper if something was added to the result
                     if prev_len < result.len() {
@@ -152,16 +180,9 @@ impl<R, V> Peel<R, V>
                     }
                 }
             }
-            error => {
-                if log_enabled!(log::LogLevel::Trace) {
-                    if Some(node_id) == self.root {
-                        bail!(ErrorType::RootParserFailed, "No parser succeed at all");
-                    }
-                    debug!("Failed parser: {}", parser.variant());
-                    self.display_error(input, error);
-                }
-            }
         }
+
+        // Return the current result
         Ok(result)
     }
 

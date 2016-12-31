@@ -14,9 +14,6 @@ pub mod prelude {
     pub use super::{ParserResult, ParserVariant, peel_example};
     pub use nom::IResult;
 
-    /// Shorthand for our own personal memory arena
-    pub type ExampleGraph = ParserGraph<ParserResult, ParserVariant>;
-
     pub use example::parser1::*;
     pub use example::parser2::*;
     pub use example::parser3::*;
@@ -60,7 +57,7 @@ pub fn peel_example() -> Peel<ParserResult, ParserVariant> {
     let mut p = Peel::new();
 
     // Create and link the parsers
-    let parser_1 = p.new_parser(Parser1);
+    let parser_1 = p.new_parser(Parser1{test:0});
 
     // Append Parser2 to Parser1
     let parser_2 = p.link_new_parser(parser_1, Parser2);
