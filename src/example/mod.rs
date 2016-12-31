@@ -9,8 +9,8 @@ use self::prelude::*;
 
 pub mod prelude {
     //! Sensible defaults for the example parsers
-    pub use ::Peel;
-    pub use parser::{Parser, ParserNode, ParserGraph};
+    pub use Peel;
+    pub use parser::Parser;
     pub use super::{ParserResult, ParserVariant, peel_example};
     pub use nom::IResult;
 
@@ -52,7 +52,7 @@ pub enum ParserResult {
 }
 
 /// Return a `Peel` instance for the example parsers
-pub fn peel_example() -> Peel<ParserResult, ParserVariant> {
+pub fn peel_example() -> Peel<ParserResult, ParserVariant, ()> {
     // Create a tree
     let mut p = Peel::new();
 

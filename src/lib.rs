@@ -43,19 +43,22 @@ use parser::ParserBox;
 pub mod prelude {
     pub use super::Peel;
     pub use error::{PeelResult, PeelError, ErrorType};
-    pub use parser::{Parser, ParserNode, ParserGraph};
+    pub use parser::Parser;
 }
 
 /// The main peeling structure
-pub struct Peel<R, V> {
+pub struct Peel<R, V, D> {
     /// The memory arena of the tree
-    pub graph: StableGraph<ParserBox<R, V>, ()>,
+    pub graph: StableGraph<ParserBox<R, V, D>, ()>,
 
     /// The first node added will be the root
     pub root: Option<NodeIndex>,
+
+    /// Additional data for which can be shared accross the parsers
+    pub data: Option<D>,
 }
 
-impl<R, V> Peel<R, V>
+impl<R, V, D> Peel<R, V, D>
     where V: fmt::Display
 {
     /// Create a new empty `Peel` instance
@@ -63,6 +66,7 @@ impl<R, V> Peel<R, V>
         Peel {
             graph: StableGraph::new(),
             root: None,
+            data: None,
         }
     }
 
@@ -77,7 +81,7 @@ impl<R, V> Peel<R, V>
 
     /// Create a new boxed Parser and return a corresponding Node
     pub fn new_parser<T>(&mut self, parser: T) -> NodeIndex
-        where T: Parser<Result = R, Variant = V> + Send + Sync + 'static
+        where T: Parser<D, Result = R, Variant = V> + Send + Sync + 'static
     {
         // Create a new node
         let new_node = self.graph.add_node(Box::new(parser));
@@ -98,7 +102,7 @@ impl<R, V> Peel<R, V>
 
     /// Create a new parser and link it with the provided node
     pub fn link_new_parser<T>(&mut self, left: NodeIndex, parser: T) -> NodeIndex
-        where T: Parser<Result = R, Variant = V> + Send + Sync + 'static
+        where T: Parser<D, Result = R, Variant = V> + Send + Sync + 'static
     {
         // Create a new node
         let new_parser = self.new_parser(parser);
@@ -134,7 +138,13 @@ impl<R, V> Peel<R, V>
             let parser = &mut self.graph[node_id];
 
             // Do the actual parsing work
-            match parser.parse(input, Some(&result)) {
+            match parser.parse(input,
+                               Some(&result),
+                               if let Some(ref mut data) = self.data {
+                                   Some(data)
+                               } else {
+                                   None
+                               }) {
                 // Parsing succeed
                 IResult::Done(left_input, parser_result) => {
                     debug!("{} parsing succeed, left input length: {}",

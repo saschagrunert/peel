@@ -1,20 +1,12 @@
 //! General parser descriptions and traits
 use std::fmt;
 use nom::IResult;
-use petgraph::graph::NodeIndex;
-use petgraph::stable_graph::StableGraph;
 
 /// The type which will be stored within the tree structure
-pub type ParserBox<R, V> = Box<Parser<Result = R, Variant = V> + Send + Sync>;
-
-/// Arena tree for parsers
-pub type ParserGraph<R, V> = StableGraph<ParserBox<R, V>, ()>;
-
-/// A node within a `ParserGraph`
-pub type ParserNode = NodeIndex;
+pub type ParserBox<R, V, D> = Box<Parser<D, Result = R, Variant = V> + Send + Sync>;
 
 /// The parsing trait
-pub trait Parser {
+pub trait Parser<D> {
     /// The type for result reporting, usually an enum
     type Result;
 
@@ -22,7 +14,11 @@ pub trait Parser {
     type Variant;
 
     /// Parse using nom and return the result
-    fn parse<'a>(&mut self, input: &'a [u8], result: Option<&Vec<Self::Result>>) -> IResult<&'a [u8], Self::Result>;
+    fn parse<'a>(&mut self,
+                 input: &'a [u8],
+                 result: Option<&Vec<Self::Result>>,
+                 data: Option<&mut D>)
+                 -> IResult<&'a [u8], Self::Result>;
 
     /// Return the actual enum variant of the parser as a clone
     fn variant(&self) -> Self::Variant;
@@ -30,7 +26,7 @@ pub trait Parser {
 
 macro_rules! impl_fmt {
     ($name: ident) => {
-        impl<R, V> fmt::$name for Parser<Result = R, Variant = V> + Send + Sync
+        impl<R, V, D> fmt::$name for Parser<D, Result = R, Variant = V> + Send + Sync
             where V: fmt::Display
         {
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

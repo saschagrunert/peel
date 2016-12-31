@@ -41,13 +41,13 @@ fn peel_success_dot() {
 #[test]
 fn peel_success_parser1() {
     let mut parser = Parser1;
-    let result = parser.parse(b"1", None).unwrap().1;
+    let result = parser.parse(b"1", None, None).unwrap().1;
     assert_eq!(result, ParserResult::Result1);
 }
 
 #[test]
 fn peel_failure_no_tree_root() {
-    let mut peel :Peel<ParserResult, ParserVariant> = Peel::new();
+    let mut peel :Peel<ParserResult, ParserVariant, ()> = Peel::new();
     let result = peel.traverse(b"TEST", vec![]);
     assert!(result.is_err());
 }

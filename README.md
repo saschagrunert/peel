@@ -17,7 +17,7 @@ Independently of what these parser do, the creation of this structure is done wi
 
 ```rust
 /// Return a `Peel` instance for the example parsers
-pub fn peel_example() -> Peel<ParserResult, ParserVariant> {
+pub fn peel_example() -> Peel<ParserResult, ParserVariant, ()> {
     // Create a tree
     let mut p = Peel::new();
 
@@ -100,7 +100,8 @@ impl Parser for Parser1 {
     /// The actual parsing entry point
     fn parse<'a>(&self,
                  input: &'a [u8],                    // The input for the parser
-                 result: Option<&Vec<Self::Result>>) // The current parsing result
+                 result: Option<&Vec<Self::Result>>, // The current parsing result
+                 data: Option<&mut ()>)              // Additional data which will be shared accross parsers
                  -> IResult<&'a [u8], Self::Result> {
         do_parse!(input,
             tag!("1") >>
@@ -116,7 +117,7 @@ impl Parser for Parser1 {
 ```
 
 It is possible to access the current parsing `result` for a more advanced behavior like dependency checks during the
-parsing.
+parsing. Furthermore, additional data `data` can be used to share data between parsers.
 
 ## Contributing
 You want to contribute to this project? Wow, thanks! So please just fork it and send me a pull request.
