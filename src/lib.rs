@@ -75,8 +75,9 @@ impl<R, V, D> Peel<R, V, D>
         // Setup the logger if not already set
         if mowl::init_with_level(level).is_err() {
             warn!("Logger already set.");
-        };
-        info!("Log level set to: {:?}", level);
+        } else {
+            info!("Log level set to: {:?}", level);
+        }
     }
 
     /// Create a new boxed Parser and return a corresponding Node
