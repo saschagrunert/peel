@@ -83,6 +83,8 @@ impl<R, V, D> Peel<R, V, D>
     pub fn new_parser<T>(&mut self, parser: T) -> NodeIndex
         where T: Parser<D, Result = R, Variant = V> + Send + Sync + 'static
     {
+        info!("New parser: {}", parser.variant());
+
         // Create a new node
         let new_node = self.graph.add_node(Box::new(parser));
 
@@ -97,6 +99,7 @@ impl<R, V, D> Peel<R, V, D>
 
     /// Append the second node to the first one within the current tree structure
     pub fn link(&mut self, left: NodeIndex, right: NodeIndex) {
+        info!("Link: {} → {}", self.graph[left], self.graph[right]);
         self.graph.add_edge(left, right, ());
     }
 
@@ -108,7 +111,7 @@ impl<R, V, D> Peel<R, V, D>
         let new_parser = self.new_parser(parser);
 
         // Append the node to the given node
-        self.graph.add_edge(left, new_parser, ());
+        self.link(left, new_parser);
 
         // Return the parser
         new_parser

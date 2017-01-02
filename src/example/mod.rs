@@ -33,6 +33,9 @@ pub enum ParserVariant {
 
     /// Fourth example parser
     Variant4(Parser4),
+
+    /// A custom parser
+    Custom,
 }
 
 #[derive(PartialEq, Debug)]
@@ -49,6 +52,9 @@ pub enum ParserResult {
 
     /// The result of the fourth example parser
     Result4,
+
+    /// A custom result
+    Custom,
 }
 
 /// Return a `Peel` instance for the example parsers
@@ -84,6 +90,7 @@ impl fmt::Display for ParserVariant {
             ParserVariant::Variant2(_) => write!(f, "Parser 2"),
             ParserVariant::Variant3(_) => write!(f, "Parser 3"),
             ParserVariant::Variant4(_) => write!(f, "Parser 4"),
+            ParserVariant::Custom => write!(f, "Custom"),
         }
     }
 }
