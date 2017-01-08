@@ -1,12 +1,14 @@
 //! # Dynamic parsing within trees 🌲 🌳 🌴
 //!
-//! Target of this library is to provide a flexible approach in parsing data. This will mainly be
-//! done within [arena](https://en.wikipedia.org/wiki/Region-based_memory_management) based
-//! [parser trees](https://en.wikipedia.org/wiki/Parse_tree) which can be modified during runtime.
-//! Every parser is using the [nom](https://github.com/Geal/nom) framework for the actual parsing
-//! work. A complete source code example can be found within the
-//! [`src/example`](https://github.com/saschagrunert/peel/tree/master/src/example) directory of the
-//! crate.
+//! Target of this library is to provide a flexible approach in parsing data.
+//! This will mainly be done within
+//! [arena](https://en.wikipedia.org/wiki/Region-based_memory_management) based
+//! [parser trees](https://en.wikipedia.org/wiki/Parse_tree) which can be modified
+//! during runtime.
+//! Every parser is using the [nom](https://github.com/Geal/nom) framework for the
+//! actual parsing work. A complete source code example can be found within the
+//! [`src/example`](https://github.com/saschagrunert/peel/tree/master/src/example)
+//! directory of the crate.
 #![deny(missing_docs)]
 
 #[macro_use]
@@ -22,7 +24,6 @@ pub mod error;
 pub mod parser;
 pub mod example;
 
-use std::fmt;
 use std::fs::File;
 use std::io::prelude::*;
 use std::collections::HashMap;
@@ -43,13 +44,13 @@ use parser::ParserBox;
 pub mod prelude {
     pub use super::Peel;
     pub use error::{PeelResult, PeelError, ErrorType};
-    pub use parser::Parser;
+    pub use parser::{Parser, ParserResult, ParserResultVec};
 }
 
 /// The main peeling structure
-pub struct Peel<R, V, D> {
+pub struct Peel<D> {
     /// The memory arena of the tree
-    pub graph: StableGraph<ParserBox<R, V, D>, ()>,
+    pub graph: StableGraph<ParserBox<D>, ()>,
 
     /// The first node added will be the root
     pub root: Option<NodeIndex>,
@@ -58,9 +59,7 @@ pub struct Peel<R, V, D> {
     pub data: Option<D>,
 }
 
-impl<R, V, D> Peel<R, V, D>
-    where V: fmt::Display
-{
+impl<D> Peel<D> {
     /// Create a new empty `Peel` instance
     pub fn new() -> Self {
         Peel {
@@ -82,9 +81,9 @@ impl<R, V, D> Peel<R, V, D>
 
     /// Create a new boxed Parser and return a corresponding Node
     pub fn new_parser<T>(&mut self, parser: T) -> NodeIndex
-        where T: Parser<D, Result = R, Variant = V> + Send + Sync + 'static
+        where T: Parser<D> + 'static
     {
-        info!("New parser: {}", parser.variant());
+        info!("New parser: {}", parser);
 
         // Create a new node
         let new_node = self.graph.add_node(Box::new(parser));
@@ -106,7 +105,7 @@ impl<R, V, D> Peel<R, V, D>
 
     /// Create a new parser and link it with the provided node
     pub fn link_new_parser<T>(&mut self, left: NodeIndex, parser: T) -> NodeIndex
-        where T: Parser<D, Result = R, Variant = V> + Send + Sync + 'static
+        where T: Parser<D> + 'static
     {
         // Create a new node
         let new_parser = self.new_parser(parser);
@@ -122,7 +121,7 @@ impl<R, V, D> Peel<R, V, D>
     ///
     /// # Errors
     /// When no tree root was found or the first parser already fails.
-    pub fn traverse(&mut self, input: &[u8], result: Vec<R>) -> PeelResult<Vec<R>> {
+    pub fn traverse(&mut self, input: &[u8], result: ParserResultVec) -> PeelResult<ParserResultVec> {
         match self.root {
             Some(node) => self.traverse_recursive(node, input, result),
             None => bail!(ErrorType::NoTreeRoot, "No tree root found"),
@@ -135,7 +134,11 @@ impl<R, V, D> Peel<R, V, D>
     ///
     /// # Errors
     /// When the first parser already fails.
-    pub fn traverse_recursive(&mut self, node_id: NodeIndex, input: &[u8], mut result: Vec<R>) -> PeelResult<Vec<R>> {
+    pub fn traverse_recursive(&mut self,
+                              node_id: NodeIndex,
+                              input: &[u8],
+                              mut result: ParserResultVec)
+                              -> PeelResult<ParserResultVec> {
 
         let (left_input, error) = {
             // Get the values from the graph structure
@@ -152,7 +155,7 @@ impl<R, V, D> Peel<R, V, D>
                 // Parsing succeed
                 IResult::Done(left_input, parser_result) => {
                     debug!("{} parsing succeed, left input length: {}",
-                           parser.variant(),
+                           parser,
                            left_input.len());
                     // Adapt the result
                     result.push(parser_result);
@@ -161,7 +164,7 @@ impl<R, V, D> Peel<R, V, D>
 
                 // Parsing failed
                 error => {
-                    trace!("Failed parser: {}", parser.variant());
+                    trace!("Failed parser: {}", parser);
                     if Some(node_id) == self.root {
                         bail!(ErrorType::RootParserFailed, "No parser succeed at all");
                     }
@@ -208,7 +211,7 @@ impl<R, V, D> Peel<R, V, D>
         // Convert the nodes
         for node_id in self.graph.node_indices() {
             let parser = &self.graph[node_id];
-            graph.add_node(format!("{}", parser.variant()));
+            graph.add_node(format!("{}", parser));
         }
 
         // Convert the edges
@@ -222,7 +225,7 @@ impl<R, V, D> Peel<R, V, D>
     }
 
     /// Display an error from a parser
-    pub fn display_error(&self, input: &[u8], res: IResult<&[u8], R>) {
+    pub fn display_error(&self, input: &[u8], res: IResult<&[u8], ParserResult>) {
         let mut h: HashMap<u32, &str> = HashMap::new();
         let parsers = ["Custom",
                        "Tag",

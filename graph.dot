@@ -1,0 +1,11 @@
+digraph {
+    0 [label="\"Parser 1\""]
+    1 [label="\"Parser 2\""]
+    2 [label="\"Parser 3\""]
+    3 [label="\"Parser 4\""]
+    0 -> 1
+    0 -> 2
+    2 -> 2
+    1 -> 2
+    2 -> 3
+}
