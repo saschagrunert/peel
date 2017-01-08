@@ -1,11 +1,10 @@
 //! Example parser 1
 use example::prelude::*;
 
-#[derive(Debug, Clone)]
 /// The first example parser
 pub struct Parser1;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, PartialEq)]
 /// The result of the first example parser
 pub struct Parser1Result;
 
@@ -16,6 +15,7 @@ impl Parser<()> for Parser1 {
                  _: Option<&ParserResultVec>,
                  _: Option<&mut ()>)
                  -> IResult<&'a [u8], ParserResult> {
+
         do_parse!(input, tag!("1") >> (Box::new(Parser1Result)))
     }
 }
