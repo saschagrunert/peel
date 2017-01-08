@@ -18,7 +18,8 @@ fn main() {
 
     let result = peel.traverse(b"12345", vec![]).unwrap();
     assert_eq!(result.len(), 5);
-    assert_eq!(result[4].downcast_ref::<MyParserResult>(), Some(&MyParserResult));
+    assert_eq!(result[4].downcast_ref::<MyParserResult>(),
+               Some(&MyParserResult));
 }
 
 #[derive(Debug, PartialEq)]
@@ -32,10 +33,7 @@ impl Parsable<()> for MyParser {
                  _: Option<&ParserResultVec>,
                  _: Option<&mut ()>)
                  -> IResult<&'a [u8], ParserResult> {
-        do_parse!(input,
-            tag!("5") >>
-            (Box::new(MyParserResult))
-        )
+        do_parse!(input, tag!("5") >> (Box::new(MyParserResult)))
     }
 }
 

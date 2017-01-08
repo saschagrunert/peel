@@ -14,10 +14,14 @@ fn peel_success_1234() {
     let result = peel.traverse(b"1234", vec![]).unwrap();
 
     assert_eq!(result.len(), 4);
-    assert_eq!(result[0].downcast_ref::<Parser1Result>(), Some(&Parser1Result));
-    assert_eq!(result[1].downcast_ref::<Parser2Result>(), Some(&Parser2Result));
-    assert_eq!(result[2].downcast_ref::<Parser3Result>(), Some(&Parser3Result));
-    assert_eq!(result[3].downcast_ref::<Parser4Result>(), Some(&Parser4Result));
+    assert_eq!(result[0].downcast_ref::<Parser1Result>(),
+               Some(&Parser1Result));
+    assert_eq!(result[1].downcast_ref::<Parser2Result>(),
+               Some(&Parser2Result));
+    assert_eq!(result[2].downcast_ref::<Parser3Result>(),
+               Some(&Parser3Result));
+    assert_eq!(result[3].downcast_ref::<Parser4Result>(),
+               Some(&Parser4Result));
 }
 
 #[test]
@@ -27,9 +31,12 @@ fn peel_success_133() {
     let result = peel.traverse(b"133", vec![]).unwrap();
 
     assert_eq!(result.len(), 3);
-    assert_eq!(result[0].downcast_ref::<Parser1Result>(), Some(&Parser1Result));
-    assert_eq!(result[2].downcast_ref::<Parser3Result>(), Some(&Parser3Result));
-    assert_eq!(result[2].downcast_ref::<Parser3Result>(), Some(&Parser3Result));
+    assert_eq!(result[0].downcast_ref::<Parser1Result>(),
+               Some(&Parser1Result));
+    assert_eq!(result[2].downcast_ref::<Parser3Result>(),
+               Some(&Parser3Result));
+    assert_eq!(result[2].downcast_ref::<Parser3Result>(),
+               Some(&Parser3Result));
 }
 
 #[test]
@@ -47,7 +54,7 @@ fn peel_success_parser1() {
 
 #[test]
 fn peel_failure_no_tree_root() {
-    let mut peel :Peel<()> = Peel::new();
+    let mut peel: Peel<()> = Peel::new();
     let result = peel.traverse(b"TEST", vec![]);
     assert!(result.is_err());
 }
