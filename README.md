@@ -84,7 +84,8 @@ impl Parsable<()> for Parser1 {
     fn parse<'a>(&mut self,
                  input: &'a [u8],                    // The input for the parser
                  result: Option<&ParserResultVec>,   // The current parsing result
-                 data: Option<&mut ()>)              // Additional data which will be shared accross parsers
+                 data: Option<&mut ()>)              // Additional data which will
+                                                     // be shared accross parsers
                  -> IResult<&'a [u8], ParserResult> {
 
         do_parse!(input, tag!("1") >> (Box::new(Parser1Result)))
