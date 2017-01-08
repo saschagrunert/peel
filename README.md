@@ -44,25 +44,8 @@ pub fn peel_example() -> Peel<ParserResult, ParserVariant, ()> {
 ```
 
 The first created parser will automatically be the root parser and the entry point for the tree traversal. Every
-succeeding parser returns a certain result, which will be pushed into a vector. This means for our example that the
-result is an enum of different types:
-
-```rust
-/// Return values of the parsers
-pub enum ParserResult {
-    /// The result of the first example parser
-    Result1,
-
-    /// The result of the second example parser
-    Result2,
-
-    /// The result of the third example parser
-    Result3,
-
-    /// The result of the fourth example parser
-    Result4,
-}
-```
+succeeding parser returns a certain result, which will be pushed into a vector as a `Box<Any>` which can be downcasted
+to a certain other type.
 
 This means that the traversal method of `Peel` will try to find the deepest possible valid path within the tree
 structure. After the creation of the structure the traversal can begin:
@@ -83,35 +66,34 @@ With the help of the [log](https://crates.io/crates/log) crate it will output:
 [peel] [DEBUG] Parser 2 parsing succeed, left input length: 2
 [peel] [DEBUG] Parser 3 parsing succeed, left input length: 1
 [peel] [DEBUG] Parser 4 parsing succeed, left input length: 0
-[Result1, Result2, Result3, Result3, Result4]
 ```
 
 A minimal parser has to implement the `Parser` trait which could look like this:
 ```rust
+use example::prelude::*;
+
+/// The first example parser
 pub struct Parser1;
 
-impl Parser for Parser1 {
-    /// The result of the parser
-    type Result = ParserResult;
+#[derive(Debug, PartialEq)]
+/// The result of the first example parser
+pub struct Parser1Result;
 
-    /// The variant of the parser
-    type Variant = ParserVariant;
-
+impl Parsable<()> for Parser1 {
     /// The actual parsing entry point
-    fn parse<'a>(&self,
+    fn parse<'a>(&mut self,
                  input: &'a [u8],                    // The input for the parser
-                 result: Option<&Vec<Self::Result>>, // The current parsing result
+                 result: Option<&ParserResultVec>,   // The current parsing result
                  data: Option<&mut ()>)              // Additional data which will be shared accross parsers
-                 -> IResult<&'a [u8], Self::Result> {
-        do_parse!(input,
-            tag!("1") >>
-            (ParserResult::Result1)
-        )
-    }
+                 -> IResult<&'a [u8], ParserResult> {
 
-    // Returns the actual parser variant
-    fn variant(&self) -> Self::Variant {
-        ParserVariant::Variant1(self.clone())
+        do_parse!(input, tag!("1") >> (Box::new(Parser1Result)))
+    }
+}
+
+impl fmt::Display for Parser1 {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Parser 1")
     }
 }
 ```

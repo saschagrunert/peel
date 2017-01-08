@@ -1,14 +1,14 @@
-//! Example parser 1
+//! Example parser 4
 use example::prelude::*;
 
-/// The first example parser
-pub struct Parser1;
+/// The fourth example parser
+pub struct Parser4;
 
 #[derive(Debug, PartialEq)]
-/// The result of the first example parser
-pub struct Parser1Result;
+/// The result of the fourth example parser
+pub struct Parser4Result;
 
-impl Parsable<()> for Parser1 {
+impl Parsable<()> for Parser4 {
     /// The actual parsing entry point
     fn parse<'a>(&mut self,
                  input: &'a [u8],
@@ -16,12 +16,12 @@ impl Parsable<()> for Parser1 {
                  _: Option<&mut ()>)
                  -> IResult<&'a [u8], ParserResult> {
 
-        do_parse!(input, tag!("1") >> (Box::new(Parser1Result)))
+        do_parse!(input, tag!("4") >> (Box::new(Parser4Result)))
     }
 }
 
-impl fmt::Display for Parser1 {
+impl fmt::Display for Parser4 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Parser 1")
+        write!(f, "Parser 4")
     }
 }

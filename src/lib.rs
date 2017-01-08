@@ -38,19 +38,19 @@ use petgraph::stable_graph::StableGraph;
 use petgraph::visit::{EdgeRef, IntoEdgeReferences};
 
 use prelude::*;
-use parser::ParserBox;
+use parser::Parser;
 
 /// Provides sensible imports at all
 pub mod prelude {
     pub use super::Peel;
     pub use error::{PeelResult, PeelError, ErrorType};
-    pub use parser::{Parser, ParserResult, ParserResultVec};
+    pub use parser::{Parsable, ParserResult, ParserResultVec};
 }
 
 /// The main peeling structure
 pub struct Peel<D> {
     /// The memory arena of the tree
-    pub graph: StableGraph<ParserBox<D>, ()>,
+    pub graph: StableGraph<Parser<D>, ()>,
 
     /// The first node added will be the root
     pub root: Option<NodeIndex>,
@@ -81,7 +81,7 @@ impl<D> Peel<D> {
 
     /// Create a new boxed Parser and return a corresponding Node
     pub fn new_parser<T>(&mut self, parser: T) -> NodeIndex
-        where T: Parser<D> + 'static
+        where T: Parsable<D> + 'static
     {
         info!("New parser: {}", parser);
 
@@ -105,7 +105,7 @@ impl<D> Peel<D> {
 
     /// Create a new parser and link it with the provided node
     pub fn link_new_parser<T>(&mut self, left: NodeIndex, parser: T) -> NodeIndex
-        where T: Parser<D> + 'static
+        where T: Parsable<D> + 'static
     {
         // Create a new node
         let new_parser = self.new_parser(parser);

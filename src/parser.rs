@@ -5,7 +5,7 @@ use std::any::Any;
 use std::fmt::Display;
 
 /// The type which will be stored within the tree structure
-pub type ParserBox<D> = Box<Parser<D>>;
+pub type Parser<D> = Box<Parsable<D>>;
 
 /// A generic parser result
 pub type ParserResult = Box<Any>;
@@ -14,7 +14,7 @@ pub type ParserResult = Box<Any>;
 pub type ParserResultVec = Vec<ParserResult>;
 
 /// The parsing trait
-pub trait Parser<D>: Display {
+pub trait Parsable<D>: Display {
     /// Parse using nom and return the result
     fn parse<'a>(&mut self,
                  input: &'a [u8],
