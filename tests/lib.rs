@@ -53,6 +53,15 @@ fn peel_success_parser1() {
 }
 
 #[test]
+fn peel_success_remove() {
+    let mut peel = peel_example();
+    let count = peel.graph.node_indices().count();
+    let last_node = peel.graph.node_indices().last().unwrap();
+    assert!(peel.remove(last_node).is_some());
+    assert_eq!(peel.graph.node_indices().count(), count - 1);
+}
+
+#[test]
 fn peel_failure_no_tree_root() {
     let mut peel: Peel<()> = Peel::new();
     let result = peel.traverse(b"TEST", vec![]);

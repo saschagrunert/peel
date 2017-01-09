@@ -103,6 +103,12 @@ impl<D> Peel<D> {
         self.graph.add_edge(left, right, ());
     }
 
+    /// Remove a parser from the graph and return if existing.
+    pub fn remove(&mut self, node: NodeIndex) -> Option<Parser<D>> {
+        info!("Removed: {}", self.graph[node]);
+        self.graph.remove_node(node)
+    }
+
     /// Create a new parser and link it with the provided node
     pub fn link_new_parser<T>(&mut self, left: NodeIndex, parser: T) -> NodeIndex
         where T: Parsable<D> + 'static

@@ -12,8 +12,8 @@ fn main() {
     let mut peel = peel_example();
     peel.set_log_level(LogLevel::Info);
 
-    let root = peel.graph.node_indices().last().unwrap();
-    peel.link_new_parser(root, MyParser);
+    let last_node = peel.graph.node_indices().last().unwrap();
+    peel.link_new_parser(last_node, MyParser);
 
     let result = peel.traverse(b"12345", vec![]).unwrap();
     assert_eq!(result.len(), 5);
