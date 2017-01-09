@@ -5,7 +5,6 @@ extern crate log;
 extern crate nom;
 extern crate peel;
 
-use std::fmt;
 use log::LogLevel;
 use peel::example::prelude::*;
 
