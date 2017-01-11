@@ -109,6 +109,13 @@ impl<D> Peel<D> {
         self.graph.remove_node(node)
     }
 
+    /// Link multiple nodes together
+    pub fn link_nodes(&mut self, edges: &[(NodeIndex, NodeIndex)]) {
+        for &(left, right) in edges {
+            self.link(left, right);
+        }
+    }
+
     /// Create a new parser and link it with the provided node
     pub fn link_new_parser<T>(&mut self, left: NodeIndex, parser: T) -> NodeIndex
         where T: Parsable<D> + 'static

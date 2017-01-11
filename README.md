@@ -16,28 +16,22 @@ example within the crate the structure looks like this:
 Independently of what these parser do, the creation of this structure is done within the `peel_example` function:
 
 ```rust
-/// Return a `Peel` instance for the example parsers
-pub fn peel_example() -> Peel<ParserResult, ParserVariant, ()> {
+pub fn peel_example() -> Peel<()> {
     // Create a tree
     let mut p = Peel::new();
 
-    // Create and link the parsers
+    // Create some parsers
     let parser_1 = p.new_parser(Parser1);
+    let parser_2 = p.new_parser(Parser2);
+    let parser_3 = p.new_parser(Parser3);
+    let parser_4 = p.new_parser(Parser4);
 
-    // Append Parser2 to Parser1
-    let parser_2 = p.link_new_parser(parser_1, Parser2);
-
-    // Append Parser3 to Parser1
-    let parser_3 = p.link_new_parser(parser_1, Parser3);
-
-    // Parser 3 referse to itself
-    p.link(parser_3, parser_3);
-
-    // Parser 2 referse to Parser 3
-    p.link(parser_2, parser_3);
-
-    // Append Parser4 to Parser3
-    p.link_new_parser(parser_3, Parser4);
+    // Link the parsers together
+    p.link_nodes(&[(parser_1, parser_2),
+                   (parser_1, parser_3),
+                   (parser_2, parser_3),
+                   (parser_3, parser_3),
+                   (parser_3, parser_4)]);
 
     p
 }

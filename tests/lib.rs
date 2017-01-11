@@ -40,6 +40,23 @@ fn peel_success_133() {
 }
 
 #[test]
+fn peel_success_link() {
+    let mut peel :Peel<()> = Peel::new();
+    let p1 = peel.new_parser(Parser1);
+    let p2 = peel.new_parser(Parser2);
+    peel.link(p1, p2);
+    assert_eq!(peel.graph.node_indices().count(), 2);
+}
+
+#[test]
+fn peel_success_link_new_parser() {
+    let mut peel :Peel<()> = Peel::new();
+    let p1 = peel.new_parser(Parser1);
+    peel.link_new_parser(p1, Parser2);
+    assert_eq!(peel.graph.node_indices().count(), 2);
+}
+
+#[test]
 fn peel_success_dot() {
     let mut peel = peel_example();
     assert!(peel.create_dot_file().is_ok());
