@@ -178,7 +178,7 @@ impl<D> Peel<D> {
                 // Parsing failed
                 error => {
                     trace!("Failed parser: {}", parser);
-                    if Some(node_id) == self.root {
+                    if result.is_empty() {
                         bail!(ErrorType::RootParserFailed, "No parser succeed at all");
                     }
                     (input, Some(error))
