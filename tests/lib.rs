@@ -64,6 +64,8 @@ fn peel_success_incomplete() {
     let mut peel = peel_example();
     peel.set_log_level(LogLevel::Trace);
     let peel_result = peel.traverse(b"", vec![]);
+    info!("{:?}", peel_result);
+
     let error = peel_result.error.unwrap();
     let res = peel_result.result;
 

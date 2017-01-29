@@ -164,16 +164,10 @@ impl<D> Peel<D> {
     /// When no tree root was found or the first parser already fails.
     pub fn traverse<'a>(&mut self, input: &'a [u8], result: ParserResultVec) -> PeelResult<'a> {
         match self.root {
-            Some(node) => {
-                let result = PeelResult::new(result, input, None);
-                self.traverse_recursive(node, result)
-            }
-
-            None => {
-                PeelResult::new(result,
-                                input,
-                                Some(PeelError::new(ErrorType::NoTreeRoot, "No tree root found")))
-            }
+            Some(node) => self.traverse_recursive(node, PeelResult::new(result, input, None)),
+            None => PeelResult::new(result,
+                                    input,
+                                    Some(PeelError::new(ErrorType::NoTreeRoot, "No tree root found"))),
         }
     }
 
