@@ -1,6 +1,6 @@
 [package]
 name = "peel"
-version = "0.6.0"
+version = "0.7.0"
 license = "MIT"
 readme = "README.md"
 keywords = ["packets", "ip", "tree", "parser", "trie"]

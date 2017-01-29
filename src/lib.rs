@@ -42,9 +42,33 @@ use parser::Parser;
 
 /// Provides sensible imports at all
 pub mod prelude {
-    pub use super::Peel;
-    pub use error::{PeelResult, PeelError, ErrorType};
+    pub use super::{Peel, PeelResult};
+    pub use error::{PeelError, ErrorType};
     pub use parser::{Parsable, ParserResult, ParserResultVec};
+}
+
+#[derive(Debug)]
+/// General return type of the Peel traversals
+pub struct PeelResult<'a> {
+    /// A vector of parser results
+    pub result: ParserResultVec,
+
+    /// The left input
+    pub left_input: &'a [u8],
+
+    /// Possible error which occured during the parsing
+    pub error: Option<PeelError>,
+}
+
+impl<'a> PeelResult<'a> {
+    /// Create a new `ParserResult`
+    fn new(result: ParserResultVec, left_input: &'a [u8], error: Option<PeelError>) -> Self {
+        PeelResult {
+            result: result,
+            left_input: left_input,
+            error: error,
+        }
+    }
 }
 
 /// The main peeling structure
@@ -138,11 +162,28 @@ impl<D> Peel<D> {
     ///
     /// # Errors
     /// When no tree root was found or the first parser already fails.
-    pub fn traverse(&mut self, input: &[u8], result: ParserResultVec) -> PeelResult<ParserResultVec> {
+    pub fn traverse<'a>(&mut self, input: &'a [u8], result: ParserResultVec) -> PeelResult<'a> {
         match self.root {
-            Some(node) => self.traverse_recursive(node, input, result),
-            None => bail!(ErrorType::NoTreeRoot, "No tree root found"),
+            Some(node) => {
+                let result = PeelResult::new(result, input, None);
+                self.traverse_recursive(node, result)
+            }
+
+            None => {
+                PeelResult::new(result,
+                                input,
+                                Some(PeelError::new(ErrorType::NoTreeRoot, "No tree root found")))
+            }
         }
+    }
+
+    /// Continue the traversal from the last processed node. This can be useful if you want to
+    /// continue traversal after an incomplete parsing.
+    pub fn continue_traverse<'a>(&mut self, input: &'a [u8], result: ParserResultVec) -> PeelResult<'a> {
+        let start_node = self.last_position;
+        let result = PeelResult::new(result, input, None);
+        trace!("Continue traversal at {:?}", start_node);
+        self.traverse_recursive(start_node, result)
     }
 
     /// Do parsing until all possible paths failed. This is equivalent in finding the deepest
@@ -151,20 +192,15 @@ impl<D> Peel<D> {
     ///
     /// # Errors
     /// When the first parser already fails.
-    pub fn traverse_recursive(&mut self,
-                              node_id: NodeIndex,
-                              input: &[u8],
-                              mut result: ParserResultVec)
-                              -> PeelResult<ParserResultVec> {
-
-        let (left_input, error) = {
+    fn traverse_recursive<'a>(&mut self, node_id: NodeIndex, mut peel_result: PeelResult<'a>) -> PeelResult<'a> {
+        let error = {
             // Get the values from the graph structure
             let parser = &mut self.graph[node_id];
             self.last_position = node_id;
 
             // Do the actual parsing work
-            match parser.parse(input,
-                               Some(&result),
+            match parser.parse(peel_result.left_input,
+                               Some(&peel_result.result),
                                if let Some(ref mut data) = self.data {
                                    Some(data)
                                } else {
@@ -176,26 +212,28 @@ impl<D> Peel<D> {
                     debug!("{} parsing succeed, left input length: {}",
                            parser,
                            left_input.len());
-                    // Adapt the result
-                    result.push(parser_result);
-                    (left_input, None)
+                    peel_result.result.push(parser_result);
+                    peel_result.left_input = left_input;
+                    None
                 }
 
                 // Parser has not enough data
                 IResult::Incomplete(needed) => {
-                    debug!("Parser needs more data: {}", parser);
-                    bail!(ErrorType::Incomplete(result, needed),
-                          "Parser {} incomplete",
-                          parser);
+                    debug!("{} needs more data", parser);
+                    peel_result.error = Some(PeelError::new(ErrorType::Incomplete(needed),
+                                                            &format!("Incomplete parser: '{}'", parser)));
+                    return peel_result;
                 }
 
                 // Parsing failed
                 IResult::Error(error) => {
                     trace!("Failed parser: {}", parser);
-                    if result.is_empty() {
-                        bail!(ErrorType::NoParserSucceed, "No parser succeed at all");
+                    if peel_result.result.is_empty() {
+                        peel_result.error = Some(PeelError::new(ErrorType::NoParserSucceed,
+                                                                "No parser succeed at all"));
+                        return peel_result;
                     }
-                    (input, Some(IResult::Error(error)))
+                    Some(IResult::Error(error))
                 }
             }
         };
@@ -204,7 +242,7 @@ impl<D> Peel<D> {
             // Display the parsing error if needed
             Some(error) => {
                 if log_enabled!(log::LogLevel::Trace) {
-                    self.display_error(input, error);
+                    self.display_error(peel_result.left_input, error);
                 }
             }
 
@@ -213,32 +251,25 @@ impl<D> Peel<D> {
                 let mut edges = self.graph.neighbors_directed(node_id, Direction::Outgoing).detach();
                 while let Some(node) = edges.next_node(&self.graph) {
                     // Save the previous result length
-                    let prev_len = result.len();
+                    let prev_len = peel_result.result.len();
 
                     // Do the recursion
-                    result = self.traverse_recursive(node, left_input, result)?;
+                    peel_result = self.traverse_recursive(node, peel_result);
 
                     // Stop going deeper if something was added to the result
-                    if prev_len < result.len() {
+                    if prev_len < peel_result.result.len() {
                         break;
                     }
                 }
             }
-        }
+        };
 
         // Return the current result
-        Ok(result)
-    }
-
-    /// Continue the traversal from the last processed node. This can be useful if you want to
-    /// continue traversal after an incomplete parsing.
-    pub fn continue_traverse(&mut self, input: &[u8], result: ParserResultVec) -> PeelResult<ParserResultVec> {
-        let start_node = self.last_position;
-        self.traverse_recursive(start_node, input, result)
+        peel_result
     }
 
     /// Create a graphviz `graph.dot` file representation in the current directory
-    pub fn create_dot_file(&mut self) -> PeelResult<()> {
+    pub fn create_dot_file(&mut self) -> Result<(), PeelError> {
         // Create a temporarily graph for conversion
         let mut graph = Graph::<_, ()>::new();
 

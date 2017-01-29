@@ -15,7 +15,7 @@ fn main() {
     let last_node = peel.graph.node_indices().last().unwrap();
     peel.link_new_parser(last_node, MyParser);
 
-    let result = peel.traverse(b"12345", vec![]).unwrap();
+    let result = peel.traverse(b"12345", vec![]).result;
     assert_eq!(result.len(), 5);
     assert_eq!(result[4].downcast_ref::<MyParserResult>(),
                Some(&MyParserResult));

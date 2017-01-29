@@ -15,7 +15,7 @@ use std::error::Error;
 fn peel_success_1234() {
     let mut peel = peel_example();
     peel.set_log_level(LogLevel::Trace);
-    let result = peel.traverse(b"1234", vec![]).unwrap();
+    let result = peel.traverse(b"1234", vec![]).result;
 
     assert_eq!(result.len(), 4);
     assert_eq!(result[0].downcast_ref::<Parser1Result>(),
@@ -32,7 +32,7 @@ fn peel_success_1234() {
 fn peel_success_1334() {
     let mut peel = peel_example();
     peel.set_log_level(LogLevel::Trace);
-    let result = peel.traverse(b"1334", vec![]).unwrap();
+    let result = peel.traverse(b"1334", vec![]).result;
 
     assert_eq!(result.len(), 4);
     assert_eq!(result[0].downcast_ref::<Parser1Result>(),
@@ -46,15 +46,31 @@ fn peel_success_1334() {
 }
 
 #[test]
+fn peel_success_133_incomplete_continue_4() {
+    let mut peel = peel_example();
+    peel.set_log_level(LogLevel::Trace);
+    let ret = peel.traverse(b"133", vec![]);
+    assert_eq!(ret.result.len(), 3);
+    assert!(ret.left_input.is_empty());
+    assert!(ret.error.is_some());
+    let ret = peel.continue_traverse(b"34", vec![]);
+    assert_eq!(ret.result.len(), 2);
+    assert!(ret.left_input.is_empty());
+    assert!(ret.error.is_none());
+}
+
+#[test]
 fn peel_success_incomplete() {
     let mut peel = peel_example();
     peel.set_log_level(LogLevel::Trace);
-    let error = peel.traverse(b"", vec![]).unwrap_err();
+    let peel_result = peel.traverse(b"", vec![]);
+    let error = peel_result.error.unwrap();
+    let res = peel_result.result;
 
-    if let ErrorType::Incomplete(res, needed) = error.code {
+    if let ErrorType::Incomplete(needed) = error.code {
         assert_eq!(needed, Needed::Size(1));
         assert!(res.is_empty());
-        let result = peel.continue_traverse(b"1234", res).unwrap();
+        let result = peel.continue_traverse(b"1234", res).result;
         assert_eq!(result.len(), 4);
     } else {
         unreachable!();
@@ -103,18 +119,15 @@ fn peel_success_remove() {
 #[test]
 fn peel_failure_no_tree_root() {
     let mut peel: Peel<()> = Peel::new();
-    let result = peel.traverse(b"TEST", vec![]);
-    assert!(result.is_err());
+    let error = peel.traverse(b"TEST", vec![]).error.unwrap();
+    assert_eq!(error.code, ErrorType::NoTreeRoot);
 }
 
 #[test]
 fn peel_failure_no_parser_succeed() {
     let mut peel = peel_example();
     peel.set_log_level(LogLevel::Trace);
-    let result = peel.traverse(b"888", vec![]);
-    assert!(result.is_err());
-    if let Err(error) = result {
-        println!("{:?}", error);
-        println!("{}", error.description());
-    }
+    let error = peel.traverse(b"888", vec![]).error.unwrap();
+    println!("{:?}", error);
+    println!("{}", error.description());
 }
