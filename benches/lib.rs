@@ -17,7 +17,7 @@ fn tree_parsing(bencher: &mut Bencher) {
     let mut peel = peel_example();
     let input = b"1234";
     bencher.iter(|| {
-        assert!(peel.traverse(input, vec![]).is_ok());
+        peel.traverse(input, vec![]);
     });
     bencher.bytes = input.len() as u64;
 }
