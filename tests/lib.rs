@@ -4,6 +4,10 @@ use log::LogLevel;
 
 extern crate peel;
 use peel::example::prelude::*;
+use peel::error::ErrorType;
+
+extern crate nom;
+use nom::Needed;
 
 use std::error::Error;
 
@@ -25,23 +29,41 @@ fn peel_success_1234() {
 }
 
 #[test]
-fn peel_success_133() {
+fn peel_success_1334() {
     let mut peel = peel_example();
     peel.set_log_level(LogLevel::Trace);
-    let result = peel.traverse(b"133", vec![]).unwrap();
+    let result = peel.traverse(b"1334", vec![]).unwrap();
 
-    assert_eq!(result.len(), 3);
+    assert_eq!(result.len(), 4);
     assert_eq!(result[0].downcast_ref::<Parser1Result>(),
                Some(&Parser1Result));
     assert_eq!(result[2].downcast_ref::<Parser3Result>(),
                Some(&Parser3Result));
     assert_eq!(result[2].downcast_ref::<Parser3Result>(),
                Some(&Parser3Result));
+    assert_eq!(result[3].downcast_ref::<Parser4Result>(),
+               Some(&Parser4Result));
+}
+
+#[test]
+fn peel_success_incomplete() {
+    let mut peel = peel_example();
+    peel.set_log_level(LogLevel::Trace);
+    let error = peel.traverse(b"", vec![]).unwrap_err();
+
+    if let ErrorType::Incomplete(res, needed) = error.code {
+        assert_eq!(needed, Needed::Size(1));
+        assert!(res.is_empty());
+        let result = peel.continue_traverse(b"1234", res).unwrap();
+        assert_eq!(result.len(), 4);
+    } else {
+        unreachable!();
+    }
 }
 
 #[test]
 fn peel_success_link() {
-    let mut peel :Peel<()> = Peel::new();
+    let mut peel: Peel<()> = Peel::new();
     let p1 = peel.new_parser(Parser1);
     let p2 = peel.new_parser(Parser2);
     peel.link(p1, p2);
@@ -50,7 +72,7 @@ fn peel_success_link() {
 
 #[test]
 fn peel_success_link_new_parser() {
-    let mut peel :Peel<()> = Peel::new();
+    let mut peel: Peel<()> = Peel::new();
     let p1 = peel.new_parser(Parser1);
     peel.link_new_parser(p1, Parser2);
     assert_eq!(peel.graph.node_indices().count(), 2);

@@ -57,6 +57,9 @@ pub struct Peel<D> {
 
     /// Additional data for which can be shared accross the parsers
     pub data: Option<D>,
+
+    /// The current parsing position for continue traversal support
+    last_position: NodeIndex,
 }
 
 impl<D> Peel<D> {
@@ -66,6 +69,7 @@ impl<D> Peel<D> {
             graph: StableGraph::new(),
             root: None,
             data: None,
+            last_position: NodeIndex::new(0),
         }
     }
 
@@ -156,6 +160,7 @@ impl<D> Peel<D> {
         let (left_input, error) = {
             // Get the values from the graph structure
             let parser = &mut self.graph[node_id];
+            self.last_position = node_id;
 
             // Do the actual parsing work
             match parser.parse(input,
@@ -165,6 +170,7 @@ impl<D> Peel<D> {
                                } else {
                                    None
                                }) {
+
                 // Parsing succeed
                 IResult::Done(left_input, parser_result) => {
                     debug!("{} parsing succeed, left input length: {}",
@@ -175,13 +181,21 @@ impl<D> Peel<D> {
                     (left_input, None)
                 }
 
+                // Parser has not enough data
+                IResult::Incomplete(needed) => {
+                    debug!("Parser needs more data: {}", parser);
+                    bail!(ErrorType::Incomplete(result, needed),
+                          "Parser {} incomplete",
+                          parser);
+                }
+
                 // Parsing failed
-                error => {
+                IResult::Error(error) => {
                     trace!("Failed parser: {}", parser);
                     if result.is_empty() {
-                        bail!(ErrorType::RootParserFailed, "No parser succeed at all");
+                        bail!(ErrorType::NoParserSucceed, "No parser succeed at all");
                     }
-                    (input, Some(error))
+                    (input, Some(IResult::Error(error)))
                 }
             }
         };
@@ -214,6 +228,13 @@ impl<D> Peel<D> {
 
         // Return the current result
         Ok(result)
+    }
+
+    /// Continue the traversal from the last processed node. This can be useful if you want to
+    /// continue traversal after an incomplete parsing.
+    pub fn continue_traverse(&mut self, input: &[u8], result: ParserResultVec) -> PeelResult<ParserResultVec> {
+        let start_node = self.last_position;
+        self.traverse_recursive(start_node, input, result)
     }
 
     /// Create a graphviz `graph.dot` file representation in the current directory

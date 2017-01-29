@@ -1,9 +1,11 @@
 //! Basic error handling mechanisms
 use std::error::Error;
 use std::{fmt, io};
+use nom::Needed;
+use parser::ParserResultVec;
 
 /// The result type for the Parsing
-pub type PeelResult<'a, T> = Result<T, PeelError>;
+pub type PeelResult<T> = Result<T, PeelError>;
 
 /// Representation for an error of the library
 pub struct PeelError {
@@ -57,14 +59,17 @@ from_error! {
     io::Error,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 /// Error codes as indicator what happened
 pub enum ErrorType {
     /// New nodes have to be added before traversing
     NoTreeRoot,
 
-    /// The root parser failed already
-    RootParserFailed,
+    /// The first parser already failed
+    NoParserSucceed,
+
+    /// A parser got not enough data
+    Incomplete(ParserResultVec, Needed),
 
     /// The error originates from another error
     Other,
