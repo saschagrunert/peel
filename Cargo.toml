@@ -1,6 +1,6 @@
 [package]
 name = "peel"
-version = "0.7.0"
+version = "0.8.0"
 license = "MIT"
 readme = "README.md"
 keywords = ["packets", "ip", "tree", "parser", "trie"]
@@ -9,6 +9,12 @@ repository = "https://github.com/saschagrunert/peel"
 homepage = "https://github.com/saschagrunert/peel"
 documentation = "https://docs.rs/peel"
 description = "Dynamic packet parsing within trees"
+categories = ["parsing"]
+license-file = "LICENSE"
+
+[badges]
+travis-ci = { repository = "saschagrunert/peel", branch = "master" }
+appveyor = { repository = "saschagrunert/peel", branch = "master", service = "github" }
 
 [dependencies]
 petgraph = "0"
