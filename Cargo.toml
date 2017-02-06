@@ -10,7 +10,6 @@ homepage = "https://github.com/saschagrunert/peel"
 documentation = "https://docs.rs/peel"
 description = "Dynamic packet parsing within trees"
 categories = ["parsing"]
-license-file = "LICENSE"
 
 [badges]
 travis-ci = { repository = "saschagrunert/peel", branch = "master" }
