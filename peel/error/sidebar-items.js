@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["ErrorType","Error codes as indicator what happened"]],"struct":[["PeelError","Representation for an error of the library"]]});

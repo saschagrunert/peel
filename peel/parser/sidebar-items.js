@@ -1,0 +1,1 @@
+initSidebarItems({"trait":[["Parsable","The parsing trait"]],"type":[["Parser","The type which will be stored within the tree structure"],["ParserResult","A generic parser result"],["ParserResultVec","A collection of parser results"]]});

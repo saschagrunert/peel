@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Peel` struct in crate `peel`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Peel">
+
+    <title>peel::Peel - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='index.html'>peel</a></p><script>window.sidebarCurrent = {name: 'Peel', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>peel</a>::<wbr><a class='struct' href=''>Peel</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/peel/lib.rs.html#75-87' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Peel&lt;D&gt; {
+    pub graph: <a class='struct' href='https://docs.rs/petgraph/0.4/petgraph/graph_impl/stable_graph/struct.StableGraph.html' title='petgraph::graph_impl::stable_graph::StableGraph'>StableGraph</a>&lt;<a class='type' href='../peel/parser/type.Parser.html' title='peel::parser::Parser'>Parser</a>&lt;D&gt;, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;,
+    pub root: <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='https://docs.rs/petgraph/0.4/petgraph/graph_impl/struct.NodeIndex.html' title='petgraph::graph_impl::NodeIndex'>NodeIndex</a>&gt;,
+    pub data: <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;D&gt;,
+    // some fields omitted
+}</pre><div class='docblock'><p>The main peeling structure</p>
+</div><h2 class='fields'>Fields</h2><span id='structfield.graph' class='structfield'>
+                           <span id='graph.v' class='invisible'>
+                           <code>graph: <a class='struct' href='https://docs.rs/petgraph/0.4/petgraph/graph_impl/stable_graph/struct.StableGraph.html' title='petgraph::graph_impl::stable_graph::StableGraph'>StableGraph</a>&lt;<a class='type' href='../peel/parser/type.Parser.html' title='peel::parser::Parser'>Parser</a>&lt;D&gt;, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code>
+                           </span></span><span class='stab '></span><div class='docblock'><p>The memory arena of the tree</p>
+</div><span id='structfield.root' class='structfield'>
+                           <span id='root.v' class='invisible'>
+                           <code>root: <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='https://docs.rs/petgraph/0.4/petgraph/graph_impl/struct.NodeIndex.html' title='petgraph::graph_impl::NodeIndex'>NodeIndex</a>&gt;</code>
+                           </span></span><span class='stab '></span><div class='docblock'><p>The first node added will be the root</p>
+</div><span id='structfield.data' class='structfield'>
+                           <span id='data.v' class='invisible'>
+                           <code>data: <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;D&gt;</code>
+                           </span></span><span class='stab '></span><div class='docblock'><p>Additional data for which can be shared accross the parsers</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl&lt;D&gt; <a class='struct' href='../peel/struct.Peel.html' title='peel::Peel'>Peel</a>&lt;D&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/peel/lib.rs.html#89-357' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.new' class='method'><span id='new.v' class='invisible'><code>fn <a href='#method.new' class='fnname'>new</a>() -&gt; Self</code></span></h4>
+<div class='docblock'><p>Create a new empty <code>Peel</code> instance</p>
+</div><h4 id='method.set_log_level' class='method'><span id='set_log_level.v' class='invisible'><code>fn <a href='#method.set_log_level' class='fnname'>set_log_level</a>(&amp;mut self, level: <a class='enum' href='https://doc.rust-lang.org/log/log/enum.LogLevel.html' title='log::LogLevel'>LogLevel</a>)</code></span></h4>
+<div class='docblock'><p>Set the global log level for reporting</p>
+</div><h4 id='method.new_parser' class='method'><span id='new_parser.v' class='invisible'><code>fn <a href='#method.new_parser' class='fnname'>new_parser</a>&lt;T&gt;(&amp;mut self, parser: T) -&gt; <a class='struct' href='https://docs.rs/petgraph/0.4/petgraph/graph_impl/struct.NodeIndex.html' title='petgraph::graph_impl::NodeIndex'>NodeIndex</a> <span class='where'>where T: <a class='trait' href='../peel/parser/trait.Parsable.html' title='peel::parser::Parsable'>Parsable</a>&lt;D&gt; + 'static</span></code></span></h4>
+<div class='docblock'><p>Create a new boxed Parser and return a corresponding Node</p>
+</div><h4 id='method.link' class='method'><span id='link.v' class='invisible'><code>fn <a href='#method.link' class='fnname'>link</a>(&amp;mut self, left: <a class='struct' href='https://docs.rs/petgraph/0.4/petgraph/graph_impl/struct.NodeIndex.html' title='petgraph::graph_impl::NodeIndex'>NodeIndex</a>, right: <a class='struct' href='https://docs.rs/petgraph/0.4/petgraph/graph_impl/struct.NodeIndex.html' title='petgraph::graph_impl::NodeIndex'>NodeIndex</a>)</code></span></h4>
+<div class='docblock'><p>Append the second node to the first one within the current tree structure</p>
+</div><h4 id='method.remove' class='method'><span id='remove.v' class='invisible'><code>fn <a href='#method.remove' class='fnname'>remove</a>(&amp;mut self, node: <a class='struct' href='https://docs.rs/petgraph/0.4/petgraph/graph_impl/struct.NodeIndex.html' title='petgraph::graph_impl::NodeIndex'>NodeIndex</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='type' href='../peel/parser/type.Parser.html' title='peel::parser::Parser'>Parser</a>&lt;D&gt;&gt;</code></span></h4>
+<div class='docblock'><p>Remove a parser from the graph and return if existing.</p>
+</div><h4 id='method.link_nodes' class='method'><span id='link_nodes.v' class='invisible'><code>fn <a href='#method.link_nodes' class='fnname'>link_nodes</a>(&amp;mut self, edges: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;[</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='struct' href='https://docs.rs/petgraph/0.4/petgraph/graph_impl/struct.NodeIndex.html' title='petgraph::graph_impl::NodeIndex'>NodeIndex</a>, <a class='struct' href='https://docs.rs/petgraph/0.4/petgraph/graph_impl/struct.NodeIndex.html' title='petgraph::graph_impl::NodeIndex'>NodeIndex</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a>)</code></span></h4>
+<div class='docblock'><p>Link multiple nodes together</p>
+</div><h4 id='method.link_new_parser' class='method'><span id='link_new_parser.v' class='invisible'><code>fn <a href='#method.link_new_parser' class='fnname'>link_new_parser</a>&lt;T&gt;(&amp;mut self, left: <a class='struct' href='https://docs.rs/petgraph/0.4/petgraph/graph_impl/struct.NodeIndex.html' title='petgraph::graph_impl::NodeIndex'>NodeIndex</a>, parser: T) -&gt; <a class='struct' href='https://docs.rs/petgraph/0.4/petgraph/graph_impl/struct.NodeIndex.html' title='petgraph::graph_impl::NodeIndex'>NodeIndex</a> <span class='where'>where T: <a class='trait' href='../peel/parser/trait.Parsable.html' title='peel::parser::Parsable'>Parsable</a>&lt;D&gt; + 'static</span></code></span></h4>
+<div class='docblock'><p>Create a new parser and link it with the provided node</p>
+</div><h4 id='method.traverse' class='method'><span id='traverse.v' class='invisible'><code>fn <a href='#method.traverse' class='fnname'>traverse</a>&lt;'a&gt;(&amp;mut self,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; input: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;'a [</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a>,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; result: <a class='type' href='../peel/parser/type.ParserResultVec.html' title='peel::parser::ParserResultVec'>ParserResultVec</a>)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&gt; <a class='struct' href='../peel/struct.PeelResult.html' title='peel::PeelResult'>PeelResult</a>&lt;'a&gt;</code></span></h4>
+<div class='docblock'><p>Convenient function for recursive traversal with the root as starting point</p>
+
+<h1 id='errors' class='section-header'><a href='#errors'>Errors</a></h1>
+<p>When no tree root was found or the first parser already fails.</p>
+</div><h4 id='method.continue_traverse' class='method'><span id='continue_traverse.v' class='invisible'><code>fn <a href='#method.continue_traverse' class='fnname'>continue_traverse</a>&lt;'a&gt;(&amp;mut self,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; input: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;'a [</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a>,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; result: <a class='type' href='../peel/parser/type.ParserResultVec.html' title='peel::parser::ParserResultVec'>ParserResultVec</a>)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&gt; <a class='struct' href='../peel/struct.PeelResult.html' title='peel::PeelResult'>PeelResult</a>&lt;'a&gt;</code></span></h4>
+<div class='docblock'><p>Continue the traversal from the last processed node. This can be useful if you want to
+continue traversal after an incomplete parsing.</p>
+</div><h4 id='method.create_dot_file' class='method'><span id='create_dot_file.v' class='invisible'><code>fn <a href='#method.create_dot_file' class='fnname'>create_dot_file</a>(&amp;mut self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>, <a class='struct' href='../peel/error/struct.PeelError.html' title='peel::error::PeelError'>PeelError</a>&gt;</code></span></h4>
+<div class='docblock'><p>Create a graphviz <code>graph.dot</code> file representation in the current directory</p>
+</div><h4 id='method.display_error' class='method'><span id='display_error.v' class='invisible'><code>fn <a href='#method.display_error' class='fnname'>display_error</a>(&amp;self, input: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;[</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a>, res: <a class='enum' href='../peel/example/prelude/enum.IResult.html' title='peel::example::prelude::IResult'>IResult</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;[</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a>, <a class='type' href='../peel/parser/type.ParserResult.html' title='peel::parser::ParserResult'>ParserResult</a>&gt;)</code></span></h4>
+<div class='docblock'><p>Display an error from a parser</p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "peel";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>
