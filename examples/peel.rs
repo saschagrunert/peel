@@ -1,4 +1,3 @@
-#[macro_use]
 extern crate log;
 
 #[macro_use]
@@ -23,6 +22,8 @@ fn main() {
 
 #[derive(Debug, PartialEq)]
 struct MyParserResult;
+
+#[derive(Debug)]
 struct MyParser;
 
 impl Parsable<()> for MyParser {
@@ -33,11 +34,5 @@ impl Parsable<()> for MyParser {
                  _: Option<&mut ()>)
                  -> IResult<&'a [u8], ParserResult> {
         do_parse!(input, tag!("5") >> (Box::new(MyParserResult)))
-    }
-}
-
-impl fmt::Display for MyParser {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "My Parser")
     }
 }

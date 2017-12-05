@@ -2,6 +2,7 @@
 use example::prelude::*;
 
 /// The first example parser
+#[derive(Debug)]
 pub struct Parser1;
 
 #[derive(Debug, PartialEq)]
@@ -17,11 +18,5 @@ impl Parsable<()> for Parser1 {
                  -> IResult<&'a [u8], ParserResult> {
 
         do_parse!(input, tag!("1") >> (Box::new(Parser1Result)))
-    }
-}
-
-impl fmt::Display for Parser1 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Parser 1")
     }
 }

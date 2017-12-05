@@ -111,7 +111,7 @@ impl<D> Peel<D> {
     pub fn new_parser<T>(&mut self, parser: T) -> NodeIndex
         where T: Parsable<D> + 'static
     {
-        info!("New parser: {}", parser);
+        info!("New parser: {:?}", parser);
 
         // Create a new node
         let new_node = self.graph.add_node(Box::new(parser));
@@ -127,13 +127,13 @@ impl<D> Peel<D> {
 
     /// Append the second node to the first one within the current tree structure
     pub fn link(&mut self, left: NodeIndex, right: NodeIndex) {
-        info!("Link: {} → {}", self.graph[left], self.graph[right]);
+        info!("Link: {:?} → {:?}", self.graph[left], self.graph[right]);
         self.graph.add_edge(left, right, ());
     }
 
     /// Remove a parser from the graph and return if existing.
     pub fn remove(&mut self, node: NodeIndex) -> Option<Parser<D>> {
-        info!("Removed: {}", self.graph[node]);
+        info!("Removed: {:?}", self.graph[node]);
         self.graph.remove_node(node)
     }
 
@@ -203,7 +203,7 @@ impl<D> Peel<D> {
 
                 // Parsing succeed
                 IResult::Done(left_input, parser_result) => {
-                    debug!("{} parsing succeed, left input length: {}",
+                    debug!("{:?} parsing succeed, left input length: {}",
                            parser,
                            left_input.len());
                     peel_result.result.push(parser_result);
@@ -213,15 +213,15 @@ impl<D> Peel<D> {
 
                 // Parser has not enough data
                 IResult::Incomplete(needed) => {
-                    debug!("{} needs more data", parser);
+                    debug!("{:?} needs more data", parser);
                     peel_result.error = Some(PeelError::new(ErrorType::Incomplete(needed),
-                                                            &format!("Incomplete parser: '{}'", parser)));
+                                                            &format!("Incomplete parser: '{:?}'", parser)));
                     return peel_result;
                 }
 
                 // Parsing failed
                 IResult::Error(error) => {
-                    trace!("Failed parser: {}", parser);
+                    trace!("Failed parser: {:?}", parser);
                     if peel_result.result.is_empty() {
                         peel_result.error = Some(PeelError::new(ErrorType::NoParserSucceed,
                                                                 "No parser succeed at all"));
@@ -270,7 +270,7 @@ impl<D> Peel<D> {
         // Convert the nodes
         for node_id in self.graph.node_indices() {
             let parser = &self.graph[node_id];
-            graph.add_node(format!("{}", parser));
+            graph.add_node(format!("{:?}", parser));
         }
 
         // Convert the edges

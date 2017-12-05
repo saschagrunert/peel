@@ -1,4 +1,3 @@
-#[macro_use]
 extern crate peel;
 use peel::error::*;
 
