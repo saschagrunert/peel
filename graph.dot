@@ -1,8 +1,8 @@
 digraph {
-    0 [label="\"Parser1\""]
-    1 [label="\"Parser2\""]
-    2 [label="\"Parser3\""]
-    3 [label="\"Parser4\""]
+    0 [label="\"(Parser1, Parser1)\""]
+    1 [label="\"(Parser2, Parser2)\""]
+    2 [label="\"(Parser3, Parser3)\""]
+    3 [label="\"(Parser4, Parser4)\""]
     0 -> 1
     0 -> 2
     1 -> 2
